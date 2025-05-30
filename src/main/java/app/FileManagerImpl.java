@@ -1,11 +1,13 @@
 package app;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import javax.swing.*;
+import javax.swing.JFileChooser;
 import util.FileUtil;
 
 /**
@@ -15,9 +17,9 @@ import util.FileUtil;
  */
 public class FileManagerImpl implements FileManager {
 
-	private final LocalFileStorageApp app;
+	private final BaseFileStorageUI app;
 
-	public FileManagerImpl(LocalFileStorageApp app) {
+	public FileManagerImpl(BaseFileStorageUI app) {
 		this.app = app;
 		initializeStorageDirectory();
 	}
@@ -39,12 +41,12 @@ public class FileManagerImpl implements FileManager {
 	public void uploadFileToSelectedFolder() {
 		String folderPath = getSelectedFilePath();
 		if (folderPath == null) {
-			JOptionPane.showMessageDialog(app, "No folder selected.");
+			app.showAlertMessage("No folder selected.");
 			return;
 		}
 		File folder = new File(folderPath);
 		if (!folder.exists() || !folder.isDirectory()) {
-			JOptionPane.showMessageDialog(app, "Selected item is not a folder.");
+			app.showAlertMessage("Selected item is not a folder.");
 			return;
 		}
 		uploadFileToSelectedFolder(folder.getAbsolutePath());
@@ -58,16 +60,16 @@ public class FileManagerImpl implements FileManager {
 	@Override
 	public void uploadFileToSelectedFolder(String folderPath) {
 		JFileChooser chooser = new JFileChooser();
-		int result = chooser.showOpenDialog(app);
+		int result = chooser.showOpenDialog(app.getComponent());
 		if (result == JFileChooser.APPROVE_OPTION) {
 			File source = chooser.getSelectedFile();
 			Path targetPath = Paths.get(folderPath, source.getName());
 			try {
 				Files.copy(source.toPath(), targetPath, StandardCopyOption.REPLACE_EXISTING);
-				JOptionPane.showMessageDialog(app, "File uploaded to folder.");
+				app.showAlertMessage("File uploaded to folder.");
 				listFiles();
 			} catch (IOException e) {
-				JOptionPane.showMessageDialog(app, "Upload failed: " + e.getMessage());
+				app.showAlertMessage("Upload failed: " + e.getMessage());
 			}
 		}
 	}
@@ -80,25 +82,25 @@ public class FileManagerImpl implements FileManager {
 	@Override
 	public void createFolder(String folderName) {
 		if (folderName == null || folderName.isEmpty()) {
-			JOptionPane.showMessageDialog(app, "Please enter a folder name.");
+			app.showAlertMessage("Please enter a folder name.");
 			return;
 		}
         String selectedFilePath = app.getSelectedFilePath();
 		if(selectedFilePath != null &&!FileUtil.isDirectory(selectedFilePath)){
-		   JOptionPane.showMessageDialog(app, "Failed to create folder. Select a directory");
+		   app.showAlertMessage("Failed to create folder. Select a directory");
            return;
 		}
         String newFolderFilePath = FileUtil.createNewFolderFilePath(selectedFilePath, folderName);
 		File folder = new File(newFolderFilePath);
 		if (!folder.exists()) {
 			if (folder.mkdirs()) {
-				JOptionPane.showMessageDialog(app, "Folder created.");
+				app.showAlertMessage( "Folder created.");
 				listFiles();
 			} else {
-				JOptionPane.showMessageDialog(app, "Failed to create folder.");
+				app.showAlertMessage("Failed to create folder.");
 			}
 		} else {
-			JOptionPane.showMessageDialog(app, "Folder already exists.");
+			app.showAlertMessage("Folder already exists.");
 		}
 	}
 
@@ -110,30 +112,26 @@ public class FileManagerImpl implements FileManager {
 	@Override
 	public void deleteSelectedFile(String filePath) {
 		if (filePath == null || filePath.isEmpty()) {
-			JOptionPane.showMessageDialog(app, "Please select a file.");
+			app.showAlertMessage("Please select a file.");
 			return;
 		}
 		File file = new File(filePath);
 		if (!file.exists()) {
-			JOptionPane.showMessageDialog(app, "File not found.");
+			app.showAlertMessage("File not found.");
 			return;
 		}
 
 		if(FileUtil.isRootDirectory(file)){
-			JOptionPane.showMessageDialog(app, "Root file directory cannot be deleted");
+			app.showAlertMessage("Root file directory cannot be deleted");
 			return;
 		}
 
 		try {
-			if (file.isDirectory()) {
-				Files.walk(file.toPath()).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
-			} else {
-				file.delete();
-			}
-			JOptionPane.showMessageDialog(app, "Deleted successfully.");
+			FileUtil.deleteFolderDirectory(file);
+			app.showAlertMessage( "Deleted successfully.");
 			listFiles();
 		} catch (IOException e) {
-			JOptionPane.showMessageDialog(app, "Delete failed: " + e.getMessage());
+			app.showAlertMessage( "Delete failed: " + e.getMessage());
 		}
 	}
 

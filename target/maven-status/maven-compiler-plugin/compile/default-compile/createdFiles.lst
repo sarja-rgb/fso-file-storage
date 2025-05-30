@@ -1,0 +1,9 @@
+app/FileMenuBar.class
+app/LocalFileStorageApp.class
+app/FileManager.class
+app/FileContextMenu.class
+listeners/FolderTreeSelectionHandler.class
+util/FileUtil.class
+app/FileManagerImpl.class
+app/BaseFileStorageUI.class
+app/FileContextMenu$1.class
