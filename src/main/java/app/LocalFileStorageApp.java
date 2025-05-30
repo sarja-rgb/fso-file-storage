@@ -1,8 +1,17 @@
 package app;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
 import java.io.File;
 import java.util.List;
-import javax.swing.*;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -16,7 +25,7 @@ import util.FileUtil;
  * can upload files, create new folders, delete selected items, and refresh the
  * file list to reflect the current state of the local storage directory.
  */
-public class LocalFileStorageApp extends JFrame {
+public class LocalFileStorageApp extends JFrame implements  BaseFileStorageUI {
 	// Manager to handle all local file operations
 	private final FileManager fileManager;
 	// Table to display files and folders
@@ -84,6 +93,7 @@ public class LocalFileStorageApp extends JFrame {
 	 * Upload and refresh file table list
 	 * @param files
 	 */
+	@Override
 	public void updateFileTable(List<File> files) {
 		tableModel.setRowCount(0);
 		for (File file : files) {
@@ -119,6 +129,7 @@ public class LocalFileStorageApp extends JFrame {
 	/**
 	 * Update and reload folder tree whenever there file or folder is modified (created, deleted)
 	 */
+	@Override
 	public void updateFolderTree() {
 		File fileRoot = new File(FileUtil.STORAGE_DIR);
 		DefaultTreeModel treeModel = (DefaultTreeModel) folderTree.getModel();
@@ -156,6 +167,7 @@ public class LocalFileStorageApp extends JFrame {
 	 *
 	 * @return String path of the selected file or null if nothing is selected.
 	 */
+	@Override
 	public String getSelectedFilePath() {
 		if(selectedTreeNode != null){
 			String selectedFilePath = FileUtil.createFilePath(selectedTreeNode.getUserObjectPath());
@@ -173,11 +185,12 @@ public class LocalFileStorageApp extends JFrame {
 	 * Set current selected Tree Node
 	 * @param selectedTreeNode
 	 */
+	@Override
 	public void setSelectedTreeNode(DefaultMutableTreeNode selectedTreeNode){
 	     this.selectedTreeNode = selectedTreeNode;
 	}
 
-
+	@Override
 	public JTable getFileTable() {
 		return fileTable;
 	}
@@ -189,5 +202,21 @@ public class LocalFileStorageApp extends JFrame {
 	 */
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(() -> new LocalFileStorageApp().setVisible(true));
+	}
+
+	/*
+	 * Display UI Alert message
+	 * 
+	 * @param message
+	 * 
+	 */
+	@Override
+	public void showAlertMessage(String message) {
+		JOptionPane.showMessageDialog(this, message);
+	}
+
+	@Override
+	public Component getComponent() {
+		return this;
 	}
 }

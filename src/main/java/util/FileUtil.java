@@ -1,6 +1,10 @@
 package util;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Comparator;
 import javax.swing.tree.TreePath;
 
 /**
@@ -73,5 +77,31 @@ public class FileUtil {
     */
    public static boolean isRootDirectory(File file){
         return file != null && file.equals(new File(STORAGE_DIR));	
+   }
+
+   /**
+    * Create fiel directory
+    * @param fileDirName
+    * @return File
+    */
+   public static File createFileDirectory(String fileDirName){
+        File dir = new File(fileDirName);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        return dir;
+   }
+
+   /**
+    * Delete file directory
+    * @param file
+    * @throws IOException
+    */
+   public static void deleteFolderDirectory(File file) throws IOException{
+    	if (file.isDirectory()) {
+				Files.walk(file.toPath()).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
+			} else {
+				file.delete();
+		}
    }
 }
