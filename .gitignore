@@ -2,3 +2,5 @@ local_storage
 local_storage/**
 bin
 bin/**
+target
+target/**

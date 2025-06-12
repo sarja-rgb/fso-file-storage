@@ -1,5 +1,9 @@
 package app;
-import javax.swing.*;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JTextField;
 
 /**
  * FileMenuBar defines the main menu bar with file actions, which are connected
@@ -12,10 +16,11 @@ public class FileMenuBar {
 		menuBar = new JMenuBar();
 		JMenu fileMenu = new JMenu("File");
 
-		JMenuItem uploadToFolderItem = new JMenuItem("Upload File to Selected Folder");
-		JMenuItem createFolderItem = new JMenuItem("Create New Folder");
-		JMenuItem deleteFolderItem = new JMenuItem("Delete Selected Folder");
+		JMenuItem uploadToFolderItem = new JMenuItem("Upload File");
+		JMenuItem createFolderItem = new JMenuItem("Create Folder");
+		JMenuItem deleteFolderItem = new JMenuItem("Delete");
 		JMenuItem refreshItem = new JMenuItem("Refresh");
+	
 		uploadToFolderItem.addActionListener(e -> fileManager.uploadFileToSelectedFolder());
 
 		/**
@@ -40,13 +45,25 @@ public class FileMenuBar {
 		* Refresh file list
 	    */
 		refreshItem.addActionListener(e -> fileManager.listFiles());
-		
+
 		fileMenu.add(uploadToFolderItem);
 		fileMenu.add(createFolderItem);
 		fileMenu.add(deleteFolderItem);
 		fileMenu.addSeparator();
 		fileMenu.add(refreshItem);
+
+
+		//Menu Item to sync local files to cloud storage
+		JMenu cloudMenu = new JMenu("Cloud");
+		JMenuItem syncToS3Item = new JMenuItem("Sync Cloud Storage"); 
+		JMenuItem awsS3LoginDialogItem = new JMenuItem("Login to AWS S3"); 
+
+		cloudMenu.add(syncToS3Item); 
+		cloudMenu.add(awsS3LoginDialogItem);
+
 		menuBar.add(fileMenu);
+		menuBar.add(cloudMenu);
+
 	}
 
 	public JMenuBar getMenuBar() {

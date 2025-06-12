@@ -4,11 +4,20 @@ package storage;
  * Aws S3 Account credentials
  */
 public class AwsS3Credential {
-    private String bucketName;
     private String accessKey;
     private String secretKey;
     private String region;
+    private String bucketName;
+
+    public AwsS3Credential() {}
     
+    public AwsS3Credential(String accessKey, String secretKey, String region, String bucketName) {
+        this.accessKey = accessKey;
+        this.secretKey = secretKey;
+        this.region = region;
+        this.bucketName = bucketName;
+    }
+
     public String getBucketName() {
         return bucketName;
     }
