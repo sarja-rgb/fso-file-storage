@@ -3,6 +3,7 @@ package app;
 import java.awt.Component;
 import java.io.File;
 import java.util.List;
+
 import javax.swing.JTable;
 import javax.swing.tree.DefaultMutableTreeNode;
 
@@ -45,7 +46,6 @@ public interface BaseFileStorageUI {
      * @return
      */
     public Component getComponent();
-
     /**
      * Updates the currently selected node in the folder tree.
      * This is used when the user selects a new folder in the UI.
@@ -59,4 +59,7 @@ public interface BaseFileStorageUI {
      * @param message
      */
     public void showAlertMessage(String message);
+
+
+    public void showCloudAccountDialog();
 }

@@ -1,11 +1,14 @@
 package storage;
 
+import java.awt.BorderLayout;
+import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.GridLayout;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 /**
@@ -38,39 +41,87 @@ public class AwsLoginDialog extends JDialog {
      */
     public AwsLoginDialog(Frame parent) {
         // Initialize a modal dialog with title
-        super(parent, "AWS Login", true);
-        setSize(400, 300);
-        setLocationRelativeTo(parent);
-        setLayout(new GridLayout(5, 2, 10, 10)); // 5 rows, 2 columns with spacing
+        // super(parent, "AWS Login", true);
+        // setSize(400, 300);
+        // setLocationRelativeTo(parent);
+        // setLayout(new GridLayout(5, 2, 10, 10)); // 5 rows, 2 columns with spacing
 
-        // Create text fields for user input
+        // // Create text fields for user input
+        // accessKeyField = new JTextField();
+        // secretKeyField = new JTextField();
+        // regionField = new JTextField("us-east-1"); // Default region
+        // bucketNameField = new JTextField();
+
+        // // Add labeled fields to the dialog
+        // add(new JLabel("AWS Access Key:"));
+        // add(accessKeyField);
+        // add(new JLabel("AWS Secret Key:"));
+        // add(secretKeyField);
+        // add(new JLabel("Region:"));
+        // add(regionField);
+        // add(new JLabel("S3 Bucket Name:"));
+        // add(bucketNameField);
+
+        // // Create a button to submit the credentials
+        // JButton loginBtn = new JButton("Connect");
+
+        // JButton cancelBtn = new JButton("Cancel");
+
+
+        // // When the button is clicked, mark as submitted and close the dialog
+        // loginBtn.addActionListener(e -> {
+        //     AwsS3Util.saveCredential(getAccessKey(), getSecretKey(), getRegion(), getBucketName());
+        //     submitted = true;
+        //     setVisible(false);
+        // });
+
+        // // Empty label to align button layout properly
+        // add(new JLabel());
+        // add(loginBtn);
+        // add(cancelBtn);
+
+
+        super(parent, "AWS Login", true);
+        setSize(400, 250);
+        setLocationRelativeTo(parent);
+        setLayout(new BorderLayout(10,10));
+
+        // Top panel for labels and text fields
+        JPanel inputPanel = new JPanel(new GridLayout(4, 2, 10, 10));
         accessKeyField = new JTextField();
         secretKeyField = new JTextField();
-        regionField = new JTextField("us-east-1"); // Default region
+        regionField = new JTextField("us-east-1");
         bucketNameField = new JTextField();
 
-        // Add labeled fields to the dialog
-        add(new JLabel("AWS Access Key:"));
-        add(accessKeyField);
-        add(new JLabel("AWS Secret Key:"));
-        add(secretKeyField);
-        add(new JLabel("Region:"));
-        add(regionField);
-        add(new JLabel("S3 Bucket Name:"));
-        add(bucketNameField);
+        inputPanel.add(new JLabel("AWS Access Key:"));
+        inputPanel.add(accessKeyField);
+        inputPanel.add(new JLabel("AWS Secret Key:"));
+        inputPanel.add(secretKeyField);
+        inputPanel.add(new JLabel("Region:"));
+        inputPanel.add(regionField);
+        inputPanel.add(new JLabel("S3 Bucket Name:"));
+        inputPanel.add(bucketNameField);
 
-        // Create a button to submit the credentials
-        JButton loginBtn = new JButton("Connect");
+        // Bottom panel for buttons
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton cancelBtn = new JButton("Cancel");
+        JButton connectBtn = new JButton("Connect");
 
-        // When the button is clicked, mark as submitted and close the dialog
-        loginBtn.addActionListener(e -> {
+        cancelBtn.addActionListener(e -> {
+            submitted = false;
+            setVisible(false);
+        });
+
+        connectBtn.addActionListener(e -> {
             submitted = true;
             setVisible(false);
         });
 
-        // Empty label to align button layout properly
-        add(new JLabel());
-        add(loginBtn);
+        buttonPanel.add(cancelBtn);
+        buttonPanel.add(connectBtn);
+
+        add(inputPanel, BorderLayout.CENTER);
+        add(buttonPanel, BorderLayout.SOUTH);
     }
 
     /**

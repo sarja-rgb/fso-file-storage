@@ -3,6 +3,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.io.File;
 import java.util.List;
+
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -16,7 +17,9 @@ import javax.swing.filechooser.FileSystemView;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+
 import listeners.FolderTreeSelectionHandler;
+import storage.AwsLoginDialog;
 import util.FileUtil;
 
 /**
@@ -34,13 +37,9 @@ public class LocalFileStorageApp extends JFrame implements  BaseFileStorageUI {
 	private DefaultMutableTreeNode rootTreeNode;
     // Current selected Jtree node	
 	private DefaultMutableTreeNode selectedTreeNode;
-
 	// Input field for creating new folders
 	private JTextField folderNameField;
-
-	private FileContextMenu fileContextMenu;
-
-
+	//private FileContextMenu fileContextMenu;
 	private JTree folderTree;
 
 	/**
@@ -59,11 +58,11 @@ public class LocalFileStorageApp extends JFrame implements  BaseFileStorageUI {
 		fileManager = new FileManagerImpl(this);
 
 		// Set Menu Bar
-		FileMenuBar menuBar = new FileMenuBar(fileManager);
+		FileMenuBar menuBar = new FileMenuBar(this,fileManager);
 		setJMenuBar(menuBar.getMenuBar());
 
 		// Set Context Menu
-		fileContextMenu = new FileContextMenu(fileTable, fileManager);
+		//fileContextMenu = new FileContextMenu(fileTable, fileManager);
 
 		// Setup Main Panel
 		setupMainPanel();
@@ -218,5 +217,14 @@ public class LocalFileStorageApp extends JFrame implements  BaseFileStorageUI {
 	@Override
 	public Component getComponent() {
 		return this;
+	}
+
+	@Override
+	public void showCloudAccountDialog() {
+			AwsLoginDialog dialog = new AwsLoginDialog(this);
+			dialog.setVisible(true);
+		    if (dialog.isSubmitted()) {
+				JOptionPane.showMessageDialog(this, "AWS credentials saved and encrypted.");
+			}
 	}
 }

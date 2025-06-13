@@ -6,8 +6,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
 import javax.swing.JFileChooser;
+
+import listeners.FileEventListener;
 import util.FileUtil;
 
 /**
@@ -18,10 +22,12 @@ import util.FileUtil;
 public class FileManagerImpl implements FileManager {
 
 	private final BaseFileStorageUI app;
+	private final List<FileEventListener> fileEventListeners;
 
 	public FileManagerImpl(BaseFileStorageUI app) {
 		this.app = app;
 		initializeStorageDirectory();
+		fileEventListeners = new ArrayList<>();
 	}
 
 	/**
@@ -67,6 +73,7 @@ public class FileManagerImpl implements FileManager {
 			try {
 				Files.copy(source.toPath(), targetPath, StandardCopyOption.REPLACE_EXISTING);
 				app.showAlertMessage("File uploaded to folder.");
+				fileEventListeners.stream().forEach(event->event.onUploadFile(targetPath.toFile()));
 				listFiles();
 			} catch (IOException e) {
 				app.showAlertMessage("Upload failed: " + e.getMessage());
@@ -95,6 +102,7 @@ public class FileManagerImpl implements FileManager {
 		if (!folder.exists()) {
 			if (folder.mkdirs()) {
 				app.showAlertMessage( "Folder created.");
+				fileEventListeners.stream().forEach(event->event.onCreateFolder(folder));
 				listFiles();
 			} else {
 				app.showAlertMessage("Failed to create folder.");
@@ -129,6 +137,7 @@ public class FileManagerImpl implements FileManager {
 		try {
 			FileUtil.deleteFolderDirectory(file);
 			app.showAlertMessage( "Deleted successfully.");
+			fileEventListeners.stream().forEach(event->event.onDeleteFile(file));
 			listFiles();
 		} catch (IOException e) {
 			app.showAlertMessage( "Delete failed: " + e.getMessage());
@@ -145,9 +154,7 @@ public class FileManagerImpl implements FileManager {
 		if (dir.exists()) {
 			File[] fileArray = dir.listFiles();
 			if (fileArray != null) {
-				for (File file : fileArray) {
-					files.add(file);
-				}
+				files = Arrays.asList(fileArray);
 			}
 		}
 		app.updateFileTable(files);
@@ -162,5 +169,13 @@ public class FileManagerImpl implements FileManager {
 	@Override
 	public String getSelectedFilePath() {
 		return app.getSelectedFilePath();
+	}
+
+	/**
+	 * Add FileEventListener to observe and listen to file operations
+	 * @param eventListener
+	 */
+	public void addFileEventListener(FileEventListener eventListener){
+        this.fileEventListeners.add(eventListener);
 	}
 }
