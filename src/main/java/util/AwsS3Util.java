@@ -20,16 +20,26 @@ import storage.AwsS3Credential;
  * AWS S3 Util helper classs
  */
 public class AwsS3Util {
+    // Default encryption key file (stores AES secret used to encrypt credentials)
     public static final String ENCRYPTION_KEY_FILE = "s3_encryption.key";
-    /**
-     * Encrypted S3 credential secret file - 
-     * The AWS credentails are encrypted and stored in the "s3_secrets.txt" file
-     */
+    // Encrypted AWS credentials will be stored here
     public static final String CREDENTIAL_FILE = "s3_credentials";
     private AwsS3Util(){}
 
     public static AwsS3Credential getCredential(){
       return new AwsS3Credential();
+    }
+
+    /**
+     * Initialize encryption key at app startup.
+     * If the AES encryption key file does not exist, create and save it.
+     * This method should be called once when the application starts.
+     */
+    public static void initializeEncryptionKey() throws IOException {
+        File keyFile = new File(ENCRYPTION_KEY_FILE);
+        if (!keyFile.exists()) {
+            generateAndSaveEncryptionKey(ENCRYPTION_KEY_FILE);
+        }
     }
 
     /* 
