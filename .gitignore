@@ -4,3 +4,5 @@ bin
 bin/**
 target
 target/**
+s3_credentials
+s3_encryption.key
