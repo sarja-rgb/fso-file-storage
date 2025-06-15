@@ -1,0 +1,70 @@
+
+package storage;
+
+import java.io.File;
+import java.io.FileWriter;
+
+import org.junit.jupiter.api.AfterAll;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+
+import com.amazonaws.services.s3.AmazonS3;
+
+/**
+ * Integration test for S3CloudStorage using real AWS credentials and bucket.
+ * This will perform live S3 operations: upload, list, and delete.
+ */
+public class S3CloudStorageIntegrationTest {
+    private static AwsS3Credential awsS3Credential;
+    private static S3CloudStoreOperations s3CloudStoreOperations;
+    private static File tempFile;
+    private static final String TEST_FILE_NAME = "s3_test_file.txt";
+
+    @BeforeAll
+    public static void setup() throws Exception {
+        //AwsS3Credential credential = AwsS3Util.loadEncryptedCredentials(new File("s3_secrets"));
+        awsS3Credential = new AwsS3Credential();
+        awsS3Credential.setRegion("us-west-2");
+        awsS3Credential.setAccessKey("AKIAQQ7BMHSMLFNSTCMC");
+        awsS3Credential.setSecretKey("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");
+        awsS3Credential.setBucketName("tunks-cloud-store1");
+        s3CloudStoreOperations = new S3CloudStoreOperations(awsS3Credential);
+        tempFile = new File(TEST_FILE_NAME);
+        try (FileWriter writer = new FileWriter(tempFile)) {
+            writer.write("Integration test content.");
+        }
+    }
+
+    @Test
+    @Order(1)
+    public void testUploadFile() {
+        s3CloudStoreOperations.save(tempFile);
+        AmazonS3 s3Client = s3CloudStoreOperations.getAwsS3Client();
+        assertTrue(s3Client.doesObjectExist(awsS3Credential.getBucketName(), TEST_FILE_NAME));
+        assertFalse(s3Client.doesObjectExist(awsS3Credential.getBucketName(), "dummy-file.txt"));
+    }
+
+    // @Test
+    // @Order(2)
+    // public void testListFiles() {
+    //     s3CloudStorage.loadAll(); // Print output, ensure no exception thrown
+    // }
+
+    @Test
+    @Order(3)
+    public void testDeleteFile() {
+        s3CloudStoreOperations.delete(tempFile);
+        AmazonS3 s3Client = s3CloudStoreOperations.getAwsS3Client();
+        assertFalse(s3Client.doesObjectExist(awsS3Credential.getBucketName(), TEST_FILE_NAME));
+    }
+
+    @AfterAll
+    public static void cleanup() {
+        if (tempFile.exists()) {
+            tempFile.delete();
+        }
+    }
+}

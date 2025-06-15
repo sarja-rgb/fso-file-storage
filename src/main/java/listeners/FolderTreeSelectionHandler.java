@@ -1,12 +1,16 @@
 package listeners;
 
-import app.LocalFileStorageApp;
 import java.io.File;
 import java.util.List;
+import java.util.stream.Collectors;
+
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
+
+import app.BaseFileStorageUI;
+import storage.FileObject;
 import util.FileUtil;
 
 /**
@@ -14,10 +18,10 @@ import util.FileUtil;
  */
 public class FolderTreeSelectionHandler implements TreeSelectionListener {
 
-    private final LocalFileStorageApp app;
+    private final BaseFileStorageUI fileStorageUI;
 
-    public FolderTreeSelectionHandler(LocalFileStorageApp app) {
-        this.app = app;
+    public FolderTreeSelectionHandler(BaseFileStorageUI fileStorageUI ) {
+        this.fileStorageUI = fileStorageUI;
     }
 
     @Override
@@ -26,13 +30,16 @@ public class FolderTreeSelectionHandler implements TreeSelectionListener {
 
         if (path != null) {
             String filePath = FileUtil.createFilePath(path);
-            File file = new File(filePath);
-            app.updateFileTable(List.of(file));
+            List<File> files = List.of(new File(filePath));
+            List<FileObject> fileObjects = files.stream().map(f->{
+                                                return  FileObject.builder().build();
+                                            }).collect(Collectors.toList());
+            fileStorageUI.updateFileTable(fileObjects);
         }
 
         DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) path.getLastPathComponent();
         if(selectedNode != null){
-            app.setSelectedTreeNode(selectedNode);
+            fileStorageUI.setSelectedTreeNode(selectedNode);
         }
     }
 }

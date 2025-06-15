@@ -1,6 +1,9 @@
 package util;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.Base64;
 
@@ -52,6 +55,33 @@ public class AwsS3Util {
         } catch (Exception ex) {
             ex.printStackTrace();
             throw new RuntimeException("Failed to save credentials: " + ex.getMessage(), ex);
+        }
+    }
+
+
+    /**
+     * Decrypt and load AWS credentials from the local file
+     */
+    public static AwsS3Credential loadCredential() {
+        try {
+            File file = new File(CREDENTIAL_FILE);
+            if (!file.exists()) {
+                throw new FileNotFoundException("Credential secret file not found. Please login");
+            }
+
+            BufferedReader reader = new BufferedReader(new FileReader(file));
+            String encoded = reader.readLine();
+            reader.close();
+
+            byte[] encrypted = Base64.getDecoder().decode(encoded);
+            SecretKeySpec secretKeySpec = new SecretKeySpec(ENCRYPTION_KEY.getBytes(), "AES");
+            Cipher cipher = Cipher.getInstance("AES");
+            cipher.init(Cipher.DECRYPT_MODE, secretKeySpec);
+            byte[] decrypted = cipher.doFinal(encrypted);
+            String json = new String(decrypted);
+            return JsonUtil.jsonToObject(json, AwsS3Credential.class);
+        } catch (Exception ex) {
+            throw new RuntimeException("Failed to load credentials: " + ex.getMessage(), ex);
         }
     }
 }

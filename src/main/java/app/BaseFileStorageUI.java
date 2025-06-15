@@ -1,11 +1,12 @@
 package app;
 
 import java.awt.Component;
-import java.io.File;
 import java.util.List;
 
 import javax.swing.JTable;
 import javax.swing.tree.DefaultMutableTreeNode;
+
+import storage.FileObject;
 
 /**
  * Interface defining the base contract for any File Storage UI.
@@ -26,7 +27,7 @@ public interface BaseFileStorageUI {
      *
      * @param files the list of files and folders to display.
      */
-    public void updateFileTable(List<File> files);
+    public void updateFileTable(List<FileObject> files);
 
     /**
      * Updates and reloads the folder tree (left panel).

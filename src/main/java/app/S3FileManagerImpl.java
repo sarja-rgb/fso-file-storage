@@ -1,88 +1,83 @@
-// package app;
+package app;
 
-// import util.FileUtil;
-// import java.io.File;
-// import java.io.IOException;
-// import java.util.ArrayList;
-// import java.util.List;
-// import storage.S3StorageManager;
+import java.io.File;
+import java.util.List;
 
-// /**
-//  * S3FileManagerImpl implements FileManager interface and uploads, deletes, and lists files/folders to/from AWS S3.
-//  */
-// public class S3FileManagerImpl implements FileManager {
+import javax.swing.JFileChooser;
 
-//     private final BaseFileStorageUI app;
-//     private final S3StorageManager s3Manager;
+import storage.FileObject;
+import storage.FileStoreOperations;
 
-//     public S3FileManagerImpl(BaseFileStorageUI app, S3StorageManager s3Manager) {
-//         this.app = app;
-//         this.s3Manager = s3Manager;
-//     }
+/**
+ * S3FileManagerImpl implements FileManager interface and uploads, deletes, and lists files/folders to/from AWS S3.
+ */
+public class S3FileManagerImpl implements FileManager {
+    private final BaseFileStorageUI appUI;
+    private final FileStoreOperations fileOperations;
+    //private final List<FileEventListener> fileEventListeners;
 
-//     @Override
-//     public void createFolder(String folderName) {
-//         if (folderName == null || folderName.isEmpty()) {
-//             app.showAlertMessage("Please enter a folder name.");
-//             return;
-//         }
-//         String folderKey = folderName.endsWith("/") ? folderName : folderName + "/";
-//         File dummy = new File("temp.txt");
-//         try {
-//             if (!dummy.exists()) dummy.createNewFile();
-//             s3Manager.uploadFile(folderKey + ".keep", dummy.getAbsolutePath());
-//             app.showAlertMessage("Folder created in S3.");
-//             listFiles();
-//         } catch (IOException e) {
-//             app.showAlertMessage("Failed to create folder: " + e.getMessage());
-//         } finally {
-//             dummy.delete();
-//         }
-//     }
+    public S3FileManagerImpl(BaseFileStorageUI appUI, FileStoreOperations fileOperations) {
+        this.appUI = appUI;
+        this.fileOperations = fileOperations;
+        //fileEventListeners = new ArrayList<>();
+    }
 
-//     @Override
-//     public void uploadFileToSelectedFolder() {
-//         String folderPath = getSelectedFilePath();
-//         if (folderPath == null) {
-//             app.showAlertMessage("No folder selected.");
-//             return;
-//         }
-//         uploadFileToSelectedFolder(folderPath);
-//     }
+    @Override
+    public void createFolder(String folderName) {
+  
+    }
 
-//     @Override
-//     public void uploadFileToSelectedFolder(String folderPath) {
-//         File selectedFile = FileUtil.chooseFile(app.getComponent());
-//         if (selectedFile == null) return;
-//         String key = folderPath.endsWith("/") ? folderPath + selectedFile.getName() : folderPath + "/" + selectedFile.getName();
-//         s3Manager.uploadFile(key, selectedFile.getAbsolutePath());
-//         app.showAlertMessage("File uploaded to S3.");
-//         listFiles();
-//     }
+    @Override
+    public void uploadFileToSelectedFolder() {
+        String folderPath = getSelectedFilePath();
+        if (folderPath == null) {
+            appUI.showAlertMessage("No folder selected.");
+            return;
+        }
+        uploadFileToSelectedFolder(folderPath);
+    }
 
-//     @Override
-//     public void deleteSelectedFile(String filePath) {
-//         if (filePath == null || filePath.isEmpty()) {
-//             app.showAlertMessage("No file selected.");
-//             return;
-//         }
-//         s3Manager.deleteFile(filePath);
-//         app.showAlertMessage("File deleted from S3.");
-//         listFiles();
-//     }
+    @Override
+    public void uploadFileToSelectedFolder(String folderPath) {
+        JFileChooser chooser = new JFileChooser();
+		int result = chooser.showOpenDialog(appUI.getComponent());
+		if (result == JFileChooser.APPROVE_OPTION) {
+			try {
+                File selectedFile = chooser.getSelectedFile();
+                this.fileOperations.save(selectedFile);
+				appUI.showAlertMessage("File uploaded to folder.");
+				//fileEventListeners.stream().forEach(event->event.onUploadFile(selectedFile));
+				listFiles();
+			} catch (Exception e) {
+				appUI.showAlertMessage("Upload failed: " + e.getMessage());
+			}
+		}
+    }
 
-//     @Override
-//     public void listFiles() {
-//         List<File> dummyList = new ArrayList<>();
-//         System.out.println("Listing files in S3:");
-//         s3Manager.listFiles();
-//         // For UI, you can adapt this section to reflect dummy file objects in the table
-//         app.updateFileTable(dummyList);
-//         app.updateFolderTree();
-//     }
+    @Override
+    public void deleteSelectedFile(String filePath) {
+        // if (filePath == null || filePath.isEmpty()) {
+        //     app.showAlertMessage("No file selected.");
+        //     return;
+        // }
+        // s3Manager.deleteFile(filePath);
+        // s3Manager.delete(file);
+        // appUI.showAlertMessage("File deleted from S3.");
+        // listFiles();
+    }
 
-//     @Override
-//     public String getSelectedFilePath() {
-//         return app.getSelectedFilePath();
-//     }
-// }
+    @Override
+    public void listFiles() {
+        System.out.println("Listing files in S3:");
+        List<FileObject> fileObjects = fileOperations.loadAll();
+        appUI.updateFileTable(fileObjects);
+        // For UI, you can adapt this section to reflect dummy file objects in the table
+        //appUI.updateFileTable(dummyList);
+        //appUI.updateFolderTree();
+    }
+
+    @Override
+    public String getSelectedFilePath() {
+        return appUI.getSelectedFilePath();
+    }
+}

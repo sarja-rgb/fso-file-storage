@@ -28,7 +28,7 @@
 //  * can upload files, create new folders, delete selected items, and refresh the
 //  * file list to reflect the current state of the local storage directory.
 //  */
-// public class LocalFileStorageApp extends JFrame implements  BaseFileStorageUI {
+// public class LocalFileStorageUI extends JFrame implements  BaseFileStorageUI {
 // 	// Manager to handle all local file operations
 // 	private final FileManager fileManager;
 // 	// Table to display files and folders
@@ -45,7 +45,7 @@
 // 	/**
 // 	 * Constructor initializes the GUI components and hooks up event listeners.
 // 	 */
-// 	public LocalFileStorageApp() {
+// 	public LocalFileStorageUI() {
 // 		setTitle("Local File Storage App");
 // 		setSize(800, 600);
 // 		setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -200,7 +200,7 @@
 // 	 * @param args Command-line arguments (not used).
 // 	 */
 // 	public static void main(String[] args) {
-// 		SwingUtilities.invokeLater(() -> new LocalFileStorageApp().setVisible(true));
+// 		SwingUtilities.invokeLater(() -> new LocalFileStorageUI().setVisible(true));
 // 	}
 
 // 	/*

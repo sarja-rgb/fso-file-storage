@@ -20,16 +20,16 @@ import com.amazonaws.services.s3.model.ListObjectsV2Result;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 
-public class S3CloudStorageTest {
+public class S3CloudStoreOperationsTest {
     private AmazonS3 mockS3Client;
     private AwsS3Credential mockCredential;
-    private S3CloudStorage s3Storage;
+    private S3CloudStoreOperations s3CloudStoreOperations;
 
     @BeforeEach
     public void setUp() {
         mockCredential = new AwsS3Credential("mockAccess", "mockSecret", "us-east-1", "mockBucket");
         mockS3Client = mock(AmazonS3.class);
-        s3Storage = new S3CloudStorage(mockS3Client,mockCredential);
+        s3CloudStoreOperations = new S3CloudStoreOperations(mockS3Client,mockCredential);
     }
 
     @Test
@@ -38,7 +38,7 @@ public class S3CloudStorageTest {
         when(file.exists()).thenReturn(true);
         when(file.getName()).thenReturn("file.txt");
 
-        s3Storage.save(file);
+        s3CloudStoreOperations.save(file);
 
         ArgumentCaptor<PutObjectRequest> captor = ArgumentCaptor.forClass(PutObjectRequest.class);
         verify(mockS3Client).putObject(captor.capture());
@@ -51,7 +51,7 @@ public class S3CloudStorageTest {
     @Test
     public void testDeleteFile() {
         File file = new File("delete-me.txt");
-        s3Storage.delete(file);
+        s3CloudStoreOperations.delete(file);
 
         verify(mockS3Client).deleteObject(mockCredential.getBucketName(), "delete-me.txt");
     }
@@ -62,7 +62,7 @@ public class S3CloudStorageTest {
         when(dir.exists()).thenReturn(false);
         when(dir.isDirectory()).thenReturn(true);
 
-        s3Storage.saveAll(dir);
+        s3CloudStoreOperations.saveAll(dir);
 
         verify(mockS3Client, never()).putObject(any(PutObjectRequest.class));
     }
@@ -79,7 +79,7 @@ public class S3CloudStorageTest {
         when(result.getObjectSummaries()).thenReturn(summaries);
         when(mockS3Client.listObjectsV2(mockCredential.getBucketName())).thenReturn(result);
 
-        s3Storage.loadAll();
+        s3CloudStoreOperations.loadAll();
 
         verify(mockS3Client).listObjectsV2(mockCredential.getBucketName());
     }

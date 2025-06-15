@@ -40,47 +40,6 @@ public class AwsLoginDialog extends JDialog {
      * @param parent the parent frame from which this dialog is launched
      */
     public AwsLoginDialog(Frame parent) {
-        // Initialize a modal dialog with title
-        // super(parent, "AWS Login", true);
-        // setSize(400, 300);
-        // setLocationRelativeTo(parent);
-        // setLayout(new GridLayout(5, 2, 10, 10)); // 5 rows, 2 columns with spacing
-
-        // // Create text fields for user input
-        // accessKeyField = new JTextField();
-        // secretKeyField = new JTextField();
-        // regionField = new JTextField("us-east-1"); // Default region
-        // bucketNameField = new JTextField();
-
-        // // Add labeled fields to the dialog
-        // add(new JLabel("AWS Access Key:"));
-        // add(accessKeyField);
-        // add(new JLabel("AWS Secret Key:"));
-        // add(secretKeyField);
-        // add(new JLabel("Region:"));
-        // add(regionField);
-        // add(new JLabel("S3 Bucket Name:"));
-        // add(bucketNameField);
-
-        // // Create a button to submit the credentials
-        // JButton loginBtn = new JButton("Connect");
-
-        // JButton cancelBtn = new JButton("Cancel");
-
-
-        // // When the button is clicked, mark as submitted and close the dialog
-        // loginBtn.addActionListener(e -> {
-        //     AwsS3Util.saveCredential(getAccessKey(), getSecretKey(), getRegion(), getBucketName());
-        //     submitted = true;
-        //     setVisible(false);
-        // });
-
-        // // Empty label to align button layout properly
-        // add(new JLabel());
-        // add(loginBtn);
-        // add(cancelBtn);
-
-
         super(parent, "AWS Login", true);
         setSize(400, 250);
         setLocationRelativeTo(parent);

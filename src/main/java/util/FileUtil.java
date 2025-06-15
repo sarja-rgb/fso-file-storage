@@ -8,6 +8,8 @@ import java.util.Comparator;
 
 import javax.swing.tree.TreePath;
 
+import storage.FileObject;
+
 /**
  * File util helper class
  */
@@ -104,5 +106,12 @@ public class FileUtil {
 			} else {
 				file.delete();
 		}
+   }
+
+   public static FileObject toFileObject(File file){
+      return FileObject.builder()
+                       .setFileName(file.getName())
+                       .setFileSize(file.getTotalSpace())
+                       .build();
    }
 }
