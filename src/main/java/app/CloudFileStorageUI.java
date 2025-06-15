@@ -58,7 +58,7 @@ public class CloudFileStorageUI extends JFrame implements  BaseFileStorageUI {
 		tableModel = new DefaultTableModel(new Object[] { "Name", "Path",  "Modified Date", "Type", "Size" }, 0);
 		fileTable = new JTable(tableModel);
         cloudStoreOperations = new S3CloudStoreOperations();
-		fileManager = new S3FileManagerImpl(this,cloudStoreOperations);
+		fileManager = new S3CloudManagerImpl(this,cloudStoreOperations);
 
 		// Set Menu Bar
 		FileMenuBar menuBar = new FileMenuBar(this,fileManager);

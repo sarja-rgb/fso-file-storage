@@ -4,10 +4,13 @@ import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.PutObjectResult;
 
 import util.AwsS3Util;
 
@@ -38,27 +41,36 @@ public class S3CloudStoreOperations implements FileStoreOperations {
         if(awsS3Credential == null){
            awsS3Credential = AwsS3Util.loadCredential();
         }
-
         connectAwsS3Client();
     }
 
     private void connectAwsS3Client(){
-        if(awsS3Credential != null){
-          BasicAWSCredentials awsCreds = new BasicAWSCredentials(awsS3Credential.getAccessKey(), awsS3Credential.getSecretKey());
-          this.s3Client = AmazonS3ClientBuilder.standard()
-            .withRegion(awsS3Credential.getRegion())
-            .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-            .build();
+        try {
+          if(awsS3Credential != null){
+             BasicAWSCredentials awsCreds = new BasicAWSCredentials(awsS3Credential.getAccessKey(), awsS3Credential.getSecretKey());
+             this.s3Client = AmazonS3ClientBuilder.standard()
+                .withRegion(awsS3Credential.getRegion())
+                .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+                .build();
+            }
+        } catch (Exception ex) {
+            System.out.println("Error connecting to AWS S3 Client "+ex.getMessage());
         }
+  
     }
 
     @Override
     public void save(File file) {
-        if (!file.exists()) return;
-        // PutObjectRequest request = new PutObjectRequest(awsS3Credential.getBucketName(), file.getName(), file);
-        // PutObjectResult objectResult = s3Client.putObject(request);
-        
-        //System.out.println("Save object result ###"+objectResult);
+        try{
+            if (!file.exists()) return;
+            PutObjectRequest request = new PutObjectRequest(awsS3Credential.getBucketName(), file.getName(), file);
+            PutObjectResult objectResult = s3Client.putObject(request);
+            
+            System.out.println("Save object result ###"+objectResult);
+        }
+        catch(AmazonServiceException ex){
+             ex.printStackTrace();
+        }
     }
 
     @Override

@@ -11,12 +11,12 @@ import storage.FileStoreOperations;
 /**
  * S3FileManagerImpl implements FileManager interface and uploads, deletes, and lists files/folders to/from AWS S3.
  */
-public class S3FileManagerImpl implements FileManager {
+public class S3CloudManagerImpl implements FileManager {
     private final BaseFileStorageUI appUI;
     private final FileStoreOperations fileOperations;
     //private final List<FileEventListener> fileEventListeners;
 
-    public S3FileManagerImpl(BaseFileStorageUI appUI, FileStoreOperations fileOperations) {
+    public S3CloudManagerImpl(BaseFileStorageUI appUI, FileStoreOperations fileOperations) {
         this.appUI = appUI;
         this.fileOperations = fileOperations;
         //fileEventListeners = new ArrayList<>();
@@ -49,7 +49,7 @@ public class S3FileManagerImpl implements FileManager {
 				//fileEventListeners.stream().forEach(event->event.onUploadFile(selectedFile));
 				listFiles();
 			} catch (Exception e) {
-				appUI.showAlertMessage("Upload failed: " + e.getMessage());
+				appUI.showAlertMessage("Upload failed: \n" + e.getMessage());
 			}
 		}
     }

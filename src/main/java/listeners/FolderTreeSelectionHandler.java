@@ -34,6 +34,7 @@ public class FolderTreeSelectionHandler implements TreeSelectionListener {
             List<FileObject> fileObjects = files.stream().map(f->{
                                                 return  FileObject.builder().build();
                                             }).collect(Collectors.toList());
+            
             fileStorageUI.updateFileTable(fileObjects);
         }
 

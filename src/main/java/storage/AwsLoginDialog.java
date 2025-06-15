@@ -11,6 +11,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import util.AwsS3Util;
+
 /**
  * AwsLoginDialog provides a simple login form for entering AWS credentials and S3 bucket details.
  * This dialog collects user input such as Access Key, Secret Key, Region, and Bucket Name,
@@ -41,16 +43,26 @@ public class AwsLoginDialog extends JDialog {
      */
     public AwsLoginDialog(Frame parent) {
         super(parent, "AWS Login", true);
+        init(parent);
+    }
+
+    private void init(Frame parent){
         setSize(400, 250);
         setLocationRelativeTo(parent);
         setLayout(new BorderLayout(10,10));
 
         // Top panel for labels and text fields
         JPanel inputPanel = new JPanel(new GridLayout(4, 2, 10, 10));
-        accessKeyField = new JTextField();
-        secretKeyField = new JTextField();
+        AwsS3Credential awsS3Credential = new  AwsS3Credential();
+        try {
+             awsS3Credential = AwsS3Util.loadCredential();
+        } catch (Exception ex) {
+          System.out.println("Error loading credentials");
+        }
+        accessKeyField = new JTextField(awsS3Credential.getAccessKey());
+        secretKeyField = new JTextField(awsS3Credential.getSecretKey());
         regionField = new JTextField("us-east-1");
-        bucketNameField = new JTextField();
+        bucketNameField = new JTextField(awsS3Credential.getBucketName());
 
         inputPanel.add(new JLabel("AWS Access Key:"));
         inputPanel.add(accessKeyField);

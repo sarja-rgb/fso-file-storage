@@ -1,7 +1,10 @@
 package app;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import javax.swing.*;
+
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.JTable;
 
 /**
  * FileContextMenu adds right-click popup functionality to the JTable. It
@@ -18,7 +21,6 @@ public class FileContextMenu {
 
 	public void init() {
 		JPopupMenu popupMenu = new JPopupMenu();
-
 		JMenuItem uploadItem = new JMenuItem("Upload File to Selected Folder");
 		JMenuItem deleteItem = new JMenuItem("Delete Selected");
 		JMenuItem refreshItem = new JMenuItem("Refresh");

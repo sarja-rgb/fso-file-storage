@@ -14,4 +14,6 @@ public interface FileStoreOperations {
     public List<FileObject> saveAll(File localDir);
 
     public List<FileObject> loadAll();
+
+    
 }
