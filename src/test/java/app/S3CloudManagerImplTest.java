@@ -63,7 +63,7 @@ public class S3CloudManagerImplTest {
         when(mockOperations.loadAll()).thenReturn(files);
 
         manager.listFiles();
-
+        
         verify(mockUI).updateFileTable(files);
     }
 
@@ -72,8 +72,6 @@ public class S3CloudManagerImplTest {
         when(mockOperations.loadAll()).thenThrow(new FileStoreException("load error"));
 
         manager.listFiles();
-
-        // Should not throw, only log
         verify(mockUI, never()).updateFileTable(any());
     }
 

@@ -2,6 +2,8 @@ package app;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -50,6 +52,7 @@ public class CloudFileStorageUI extends JFrame implements BaseFileStorageUI {
     // Cloud storage operations handler (AWS S3 implementation)
     private S3CloudStoreOperations cloudStoreOperations;
 
+	private AwsS3Credential awsS3Credential;
     /**
      * Constructor initializes and builds the GUI layout and components.
      */
@@ -68,8 +71,12 @@ public class CloudFileStorageUI extends JFrame implements BaseFileStorageUI {
 
         tableModel = new DefaultTableModel(new Object[] { "Name", "Path", "Modified Date", "Type", "Size" }, 0);
         fileTable = new JTable(tableModel);
-
-        cloudStoreOperations = new S3CloudStoreOperations();
+		try {
+			awsS3Credential = AwsS3Util.loadCredential();
+		} catch (IOException e) {
+		    System.out.println("Error loading AWS credentials");
+		}
+        cloudStoreOperations = new S3CloudStoreOperations(awsS3Credential);
         fileManager = new S3CloudManagerImpl(this, cloudStoreOperations);
 
         FileMenuBar menuBar = new FileMenuBar(this, fileManager);
@@ -77,6 +84,21 @@ public class CloudFileStorageUI extends JFrame implements BaseFileStorageUI {
 
         setupMainPanel();
         fileManager.listFiles(); // Load initial file list
+
+		addWindowListener(new WindowAdapter() {
+               @Override
+               public void windowOpened(WindowEvent e) {
+                   System.out.println("Window Opened");
+				  if(awsS3Credential == null){
+                     showAlertMessage("AWS S3 Credentials not found. Please login the S3 credentials.");
+				  }  
+               }
+
+               @Override
+               public void windowActivated(WindowEvent e) {
+                   System.out.println("Window Activated");
+               }
+        });
     }
 
     /**
