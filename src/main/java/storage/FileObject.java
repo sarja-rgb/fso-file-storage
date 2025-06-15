@@ -1,5 +1,7 @@
 package storage;
 
+import java.util.Date;
+
 /**
   * FileObject holds the result of an operation on a file, including metadata.
 */
@@ -7,7 +9,7 @@ public class FileObject {
     private String fileName;
     private String fileType;
     private String bucketName;
-    private long lastModifiedDate;
+    private Date lastModifiedDate;
     private long fileSize;
     private String filePath;
     
@@ -29,10 +31,10 @@ public class FileObject {
     public void setBucketName(String bucketName) {
       this.bucketName = bucketName;
     }
-    public long getLastModifiedDate() {
+    public Date getLastModifiedDate() {
       return lastModifiedDate;
     }
-    public void setLastModifiedDate(long lastModifiedDate) {
+    public void setLastModifiedDate(Date lastModifiedDate) {
       this.lastModifiedDate = lastModifiedDate;
     }
     public long getFileSize() {
@@ -49,9 +51,25 @@ public class FileObject {
       this.filePath = filePath;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("FileObject{");
+        sb.append("fileName=").append(fileName);
+        sb.append(", fileType=").append(fileType);
+        sb.append(", bucketName=").append(bucketName);
+        sb.append(", lastModifiedDate=").append(lastModifiedDate);
+        sb.append(", fileSize=").append(fileSize);
+        sb.append(", filePath=").append(filePath);
+        sb.append('}');
+        return sb.toString();
+    }
+
     public static FileObjectBuilder builder(){
        return new FileObjectBuilder();
     }
+
+  
 
 
     public static class FileObjectBuilder{
@@ -76,7 +94,7 @@ public class FileObject {
           return this;
         }
 
-        public FileObjectBuilder setLastModifiedDate(long lastModifiedDate) {
+        public FileObjectBuilder setLastModifiedDate( Date lastModifiedDate) {
           this.fileObject.setLastModifiedDate(lastModifiedDate);
           return this;
         }

@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.GridLayout;
+import java.io.IOException;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -56,12 +57,12 @@ public class AwsLoginDialog extends JDialog {
         AwsS3Credential awsS3Credential = new  AwsS3Credential();
         try {
              awsS3Credential = AwsS3Util.loadCredential();
-        } catch (Exception ex) {
+        } catch (IOException ex) {
           System.out.println("Error loading credentials");
         }
         accessKeyField = new JTextField(awsS3Credential.getAccessKey());
         secretKeyField = new JTextField(awsS3Credential.getSecretKey());
-        regionField = new JTextField("us-east-1");
+        regionField = new JTextField(awsS3Credential.getRegion());
         bucketNameField = new JTextField(awsS3Credential.getBucketName());
 
         inputPanel.add(new JLabel("AWS Access Key:"));
@@ -76,7 +77,7 @@ public class AwsLoginDialog extends JDialog {
         // Bottom panel for buttons
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton cancelBtn = new JButton("Cancel");
-        JButton connectBtn = new JButton("Connect");
+        JButton connectBtn = new JButton("Connect & Save");
 
         cancelBtn.addActionListener(e -> {
             submitted = false;

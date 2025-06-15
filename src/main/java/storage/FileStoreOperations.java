@@ -7,13 +7,13 @@ import java.util.List;
  * Base File Storage Operations interface
  */
 public interface FileStoreOperations {
-    public void save(File file);
+    public void save(File file) throws FileStoreException;
 
-    public void delete(File file);
+    public void delete(FileObject fileObject) throws FileStoreException;
 
-    public List<FileObject> saveAll(File localDir);
+    public List<FileObject> saveAll(File localDir) throws FileStoreException;
 
-    public List<FileObject> loadAll();
+    public List<FileObject> loadAll() throws FileStoreException;
 
-    
+
 }
