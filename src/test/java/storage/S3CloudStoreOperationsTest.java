@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -33,7 +35,7 @@ public class S3CloudStoreOperationsTest {
     }
 
     @Test
-    public void testSaveFile() {
+    public void testSaveFile() throws FileStoreException {
         File file = mock(File.class);
         when(file.exists()).thenReturn(true);
         when(file.getName()).thenReturn("file.txt");
@@ -49,15 +51,17 @@ public class S3CloudStoreOperationsTest {
     }
 
     @Test
-    public void testDeleteFile() {
-        File file = new File("delete-me.txt");
-        s3CloudStoreOperations.delete(file);
+    public void testDeleteFile() throws FileStoreException {
+        FileObject fileObject = FileObject.builder()
+                                           .setFileName("delete-me.txt")
+                                           .build();
+        s3CloudStoreOperations.delete(fileObject);
 
         verify(mockS3Client).deleteObject(mockCredential.getBucketName(), "delete-me.txt");
     }
 
     @Test
-    public void testSaveAllSkipsNonExistentDir() {
+    public void testSaveAllSkipsNonExistentDir() throws FileStoreException {
         File dir = mock(File.class);
         when(dir.exists()).thenReturn(false);
         when(dir.isDirectory()).thenReturn(true);
@@ -68,7 +72,7 @@ public class S3CloudStoreOperationsTest {
     }
 
     @Test
-    public void testLoadAll() {
+    public void testLoadAll() throws FileStoreException {
         ListObjectsV2Result result = mock(ListObjectsV2Result.class);
         List<S3ObjectSummary> summaries = new ArrayList<>();
         S3ObjectSummary summary = new S3ObjectSummary();
@@ -79,8 +83,10 @@ public class S3CloudStoreOperationsTest {
         when(result.getObjectSummaries()).thenReturn(summaries);
         when(mockS3Client.listObjectsV2(mockCredential.getBucketName())).thenReturn(result);
 
-        s3CloudStoreOperations.loadAll();
+        List<FileObject> fileObjects = s3CloudStoreOperations.loadAll();
 
         verify(mockS3Client).listObjectsV2(mockCredential.getBucketName());
+
+        assertTrue(!fileObjects.isEmpty());
     }
 }
