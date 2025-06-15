@@ -26,7 +26,7 @@ public class FileMenuBar {
 		menuBar = new JMenuBar();
 		JMenu fileMenu = new JMenu("File");
 
-		JMenuItem uploadToFolderItem = new JMenuItem("Upload File");
+		JMenuItem uploadToFolderItem = new JMenuItem("Upload");
 		//JMenuItem createFolderItem = new JMenuItem("Create Folder");
 		JMenuItem deleteFolderItem = new JMenuItem("Delete");
 		JMenuItem refreshItem = new JMenuItem("Refresh");
