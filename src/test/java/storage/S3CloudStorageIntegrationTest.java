@@ -3,7 +3,7 @@ package storage;
 
 import java.io.File;
 import java.io.FileWriter;
-
+import java.util.List;
 import org.junit.jupiter.api.AfterAll;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -29,7 +29,7 @@ public class S3CloudStorageIntegrationTest {
         awsS3Credential.setRegion("us-west-2");
         awsS3Credential.setAccessKey("AKIAQQ7BMHSMLFNSTCMC");
         awsS3Credential.setSecretKey("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");
-        awsS3Credential.setBucketName("tunks-cloud-store1");
+        awsS3Credential.setBucketName("cloudstore0625");
         s3CloudStoreOperations = new S3CloudStoreOperations(awsS3Credential);
         tempFile = new File(TEST_FILE_NAME);
         try (FileWriter writer = new FileWriter(tempFile)) {
@@ -46,18 +46,20 @@ public class S3CloudStorageIntegrationTest {
         assertFalse(s3Client.doesObjectExist(awsS3Credential.getBucketName(), "dummy-file.txt"));
     }
 
-    // @Test
-    // @Order(2)
-    // public void testListFiles() {
-    //     s3CloudStorage.loadAll(); // Print output, ensure no exception thrown
-    // }
+    @Test
+    @Order(2)
+    public void testListFiles() throws FileStoreException {
+        List<FileObject> fileObjects = s3CloudStoreOperations.loadAll();
+        assertTrue(!fileObjects.isEmpty());
+    }
 
     @Test
     @Order(3)
     public void testDeleteFile() throws FileStoreException {
-       // s3CloudStoreOperations.delete(tempFile);
+        FileObject fileObject = FileObject.builder().setFileName(TEST_FILE_NAME).build();
+        s3CloudStoreOperations.delete(fileObject);
         AmazonS3 s3Client = s3CloudStoreOperations.getAwsS3Client();
-        assertFalse(s3Client.doesObjectExist(awsS3Credential.getBucketName(), TEST_FILE_NAME));
+        assertFalse(s3Client.doesObjectExist(awsS3Credential.getBucketName(), fileObject.getFileName()));
     }
 
     @AfterAll

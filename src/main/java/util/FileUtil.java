@@ -19,6 +19,7 @@ public class FileUtil {
      */
     public static final String STORAGE_DIR = "S3 Storage";
 
+    public static final String DEFAULT_OBJECT_TYPE = "File";
     /**
      * Tree path to FilePath
      * @param treePath

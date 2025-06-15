@@ -64,7 +64,6 @@ public class FileMenuBar {
 		//Menu Item to sync local files to cloud storage
 		JMenu cloudMenu = new JMenu("Cloud");
 		JMenuItem awsS3LoginDialogItem = new JMenuItem("AWS S3 Login"); 
-
 		if(parentUI != null){
 		   awsS3LoginDialogItem.addActionListener(e->parentUI.showCloudAccountDialog());
 		}

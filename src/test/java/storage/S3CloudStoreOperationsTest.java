@@ -14,6 +14,7 @@ import org.mockito.ArgumentCaptor;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -61,14 +62,20 @@ public class S3CloudStoreOperationsTest {
     }
 
     @Test
-    public void testSaveAllSkipsNonExistentDir() throws FileStoreException {
-        File dir = mock(File.class);
-        when(dir.exists()).thenReturn(false);
-        when(dir.isDirectory()).thenReturn(true);
+    public void testSaveAllFiles() throws FileStoreException {
+        File file1 = mock(File.class);
+        when(file1.exists()).thenReturn(true);
+        when(file1.getName()).thenReturn("file1.txt");
+        when(file1.isFile()).thenReturn(true);
 
-        s3CloudStoreOperations.saveAll(dir);
+        File file2 = mock(File.class);
+        when(file2.exists()).thenReturn(true);
+        when(file2.getName()).thenReturn("file2.txt");
+        when(file2.isFile()).thenReturn(true);
 
-        verify(mockS3Client, never()).putObject(any(PutObjectRequest.class));
+        s3CloudStoreOperations.saveAll(List.of(file1,file2));
+
+        verify(mockS3Client, times(2)).putObject(any(PutObjectRequest.class));
     }
 
     @Test
