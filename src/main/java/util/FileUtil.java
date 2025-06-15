@@ -17,7 +17,7 @@ public class FileUtil {
     /**
      * Default file storage directo
      */
-    public static final String STORAGE_DIR = "cloud_storage";
+    public static final String STORAGE_DIR = "S3 Storage";
 
     /**
      * Tree path to FilePath
