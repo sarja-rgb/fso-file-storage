@@ -2,6 +2,7 @@ package app;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 import javax.swing.JFrame;
@@ -10,9 +11,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
-import javax.swing.JTextField;
 import javax.swing.JTree;
-import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -20,27 +19,25 @@ import javax.swing.tree.DefaultTreeModel;
 
 import listeners.FolderTreeSelectionHandler;
 import storage.AwsLoginDialog;
+import storage.AwsS3Credential;
 import storage.FileObject;
 import storage.S3CloudStoreOperations;
+import util.AwsS3Util;
 import util.FileUtil;
 
 /**
  * FileStorageApp is the main GUI application class. It provides a Swing-based
  * user interface for managing files and folders in a storage directory. Users
  * can upload files, create new folders, delete selected items, and refresh the
- * file list to reflect the current state of the local storage directory.
+ * file list to reflect the current state of the Cloud storage .
  */
 public class CloudFileStorageUI extends JFrame implements  BaseFileStorageUI {
 	// Manager to handle all local file operations
-	private final FileManager fileManager;
+	private FileManager fileManager;
 	// Table to display files and folders
 	private JTable fileTable;
 	private DefaultTableModel tableModel;
 	private DefaultMutableTreeNode rootTreeNode;
-    // Current selected Jtree node	
-	private DefaultMutableTreeNode selectedTreeNode;
-	// Input field for creating new folders
-	private JTextField folderNameField;
 	//private FileContextMenu fileContextMenu;
 	private JTree folderTree;
 	private S3CloudStoreOperations cloudStoreOperations;
@@ -49,12 +46,14 @@ public class CloudFileStorageUI extends JFrame implements  BaseFileStorageUI {
 	 * Constructor initializes the GUI components and hooks up event listeners.
 	 */
 	public CloudFileStorageUI() {
+	    init();
+	}
+
+	private void init(){
 		setTitle("Cloud File Storage App");
 		setSize(800, 600);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setLocationRelativeTo(null);
-
-		folderNameField = new JTextField(20);
 		tableModel = new DefaultTableModel(new Object[] { "Name", "Path",  "Modified Date", "Type", "Size" }, 0);
 		fileTable = new JTable(tableModel);
         cloudStoreOperations = new S3CloudStoreOperations();
@@ -63,9 +62,6 @@ public class CloudFileStorageUI extends JFrame implements  BaseFileStorageUI {
 		// Set Menu Bar
 		FileMenuBar menuBar = new FileMenuBar(this,fileManager);
 		setJMenuBar(menuBar.getMenuBar());
-
-		// Set Context Menu
-		//fileContextMenu = new FileContextMenu(fileTable, fileManager);
 
 		// Setup Main Panel
 		setupMainPanel();
@@ -99,6 +95,7 @@ public class CloudFileStorageUI extends JFrame implements  BaseFileStorageUI {
 	public void updateFileTable(List<FileObject> files) {
 		tableModel.setRowCount(0);
 		for (FileObject fileObject : files) {
+
 			addFileToTableRecursive(fileObject);
 		}
 	}
@@ -107,20 +104,13 @@ public class CloudFileStorageUI extends JFrame implements  BaseFileStorageUI {
 	 * @param file
 	 */
 	private void addFileToTableRecursive(FileObject fileObject) {
+		System.out.println("# addFileToTableRecursive "+fileObject);
 		Object[] fileItem = new Object[] { fileObject.getFileName(),
 			                               fileObject.getFilePath(), 
 										   fileObject.getLastModifiedDate(),
 										   fileObject.getFileType(),
 										   fileObject.getFileSize() };
 		tableModel.addRow(fileItem);
-		// if (file.isDirectory()) {
-		// 	File[] children = file.listFiles();
-		// 	if (children != null) {
-		// 		for (File child : children) {
-		// 			addFileToTableRecursive(child);
-		// 		}
-		// 	}
-		// }
 	}
 
 	private void initFolderTree() {
@@ -168,47 +158,25 @@ public class CloudFileStorageUI extends JFrame implements  BaseFileStorageUI {
 	}
 
 	/**
-	 * Returns the absolute path of the selected file in the JTable.
+	 * Returns the name of the selected file in the JTable.
 	 *
 	 * @return String path of the selected file or null if nothing is selected.
 	 */
 	@Override
-	public String getSelectedFilePath() {
-		if(selectedTreeNode != null){
-			String selectedFilePath = FileUtil.createFilePath(selectedTreeNode.getUserObjectPath());
-			if (selectedFilePath != null && !selectedFilePath.isEmpty()){
-                return selectedFilePath;
-			}
-		}
+	public FileObject getSelectedFile() {
 		int selectedRow = fileTable.getSelectedRow();
 		if (selectedRow == -1)
-			return null; // No selection
-		return (String) tableModel.getValueAt(selectedRow, 1); // Get file path from table
-	}
-
-	/**
-	 * Set current selected Tree Node
-	 * @param selectedTreeNode
-	 */
-	@Override
-	public void setSelectedTreeNode(DefaultMutableTreeNode selectedTreeNode){
-	     this.selectedTreeNode = selectedTreeNode;
+			return null;
+		return FileObject.builder()
+		                 .setFileName((String)tableModel.getValueAt(selectedRow, 0))
+		                 .build();
 	}
 
 	@Override
 	public JTable getFileTable() {
 		return fileTable;
 	}
-
-	/**
-	 * Main method to launch the application.
-	 *
-	 * @param args Command-line arguments (not used).
-	 */
-	public static void main(String[] args) {
-		SwingUtilities.invokeLater(() -> new CloudFileStorageUI().setVisible(true));
-	}
-
+	
 	/*
 	 * Display UI Alert message
 	 * 
@@ -230,7 +198,22 @@ public class CloudFileStorageUI extends JFrame implements  BaseFileStorageUI {
 			AwsLoginDialog dialog = new AwsLoginDialog(this);
 			dialog.setVisible(true);
 		    if (dialog.isSubmitted()) {
-				JOptionPane.showMessageDialog(this, "AWS credentials saved and encrypted.");
+	            saveLoginCredentials(dialog);
 			}
+	}
+
+	private void saveLoginCredentials(AwsLoginDialog dialog){
+		try {
+			AwsS3Credential awsS3Credential = new AwsS3Credential();
+			awsS3Credential.setAccessKey(dialog.getAccessKey());
+			awsS3Credential.setSecretKey(dialog.getSecretKey());
+			awsS3Credential.setRegion(dialog.getRegion());
+			awsS3Credential.setBucketName(dialog.getBucketName());
+			AwsS3Util.saveCredential(awsS3Credential);
+			JOptionPane.showMessageDialog(this, "AWS credentials saved and encrypted.");	
+		} catch (IOException ex) {
+			JOptionPane.showMessageDialog(this, "Failed to login");	
+			System.out.println("Save login error "+ex.getMessage());
+		}
 	}
 }

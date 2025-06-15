@@ -20,7 +20,7 @@ public interface BaseFileStorageUI {
      *
      * @return the absolute path of the selected file/folder or null if not selected.
      */
-    public String getSelectedFilePath();
+    public FileObject getSelectedFile();
 
     /**
      * Updates the file table (right panel) with a list of files/folders.
@@ -47,13 +47,6 @@ public interface BaseFileStorageUI {
      * @return
      */
     public Component getComponent();
-    /**
-     * Updates the currently selected node in the folder tree.
-     * This is used when the user selects a new folder in the UI.
-     *
-     * @param selectedTreeNode the selected tree node in the JTree
-     */
-    public void setSelectedTreeNode(DefaultMutableTreeNode selectedTreeNode);
 
     /**
      * Display Alert message

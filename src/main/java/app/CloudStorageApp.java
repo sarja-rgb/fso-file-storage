@@ -1,6 +1,10 @@
 package app;
 
+import java.io.IOException;
+
 import javax.swing.SwingUtilities;
+
+import util.AwsS3Util;
 /**
  * Cloud StorageApp is the main GUI application class. It provides a Swing-based
  * user interface for managing files and folders in a storage directory. Users
@@ -14,6 +18,12 @@ public class CloudStorageApp  {
 	 * @param args Command-line arguments (not used).
 	 */
 	public static void main(String[] args) {
+		try {
+			AwsS3Util.initializeEncryptionKey(); // Ensure AES key exists
+		} catch (IOException e) {
+			System.err.println("Failed to initialize encryption key: " + e.getMessage());
+			System.exit(1);
+		}
 		SwingUtilities.invokeLater(() -> new CloudFileStorageUI().setVisible(true));
 	}
 
