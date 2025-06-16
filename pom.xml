@@ -19,6 +19,19 @@
     </properties>
 
     <dependencies>
+       <!-- AWS SDK for S3 -->
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-s3</artifactId>
+            <version>1.12.696</version> <!-- Use latest stable version if possible -->
+        </dependency>
+
+        <!-- Optional: Apache Commons IO (for file operations, if needed) -->
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.15.1</version>
+        </dependency>
         <!-- JUnit 5 for unit testing -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>

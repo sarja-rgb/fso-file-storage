@@ -2,3 +2,8 @@ local_storage
 local_storage/**
 bin
 bin/**
+target
+target/**
+s3_credentials
+s3_encryption.key
+secrets_test.properties

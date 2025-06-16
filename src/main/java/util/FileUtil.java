@@ -5,7 +5,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
+
 import javax.swing.tree.TreePath;
+
+import storage.FileObject;
 
 /**
  * File util helper class
@@ -14,8 +17,9 @@ public class FileUtil {
     /**
      * Default file storage directo
      */
-    public static final String STORAGE_DIR = "local_storage";
+    public static final String STORAGE_DIR = "S3 Storage";
 
+    public static final String DEFAULT_OBJECT_TYPE = "File";
     /**
      * Tree path to FilePath
      * @param treePath
@@ -103,5 +107,12 @@ public class FileUtil {
 			} else {
 				file.delete();
 		}
+   }
+
+   public static FileObject toFileObject(File file){
+      return FileObject.builder()
+                       .setFileName(file.getName())
+                       .setFileSize(file.getTotalSpace())
+                       .build();
    }
 }
