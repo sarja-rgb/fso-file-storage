@@ -6,3 +6,4 @@ target
 target/**
 s3_credentials
 s3_encryption.key
+secrets_test.properties

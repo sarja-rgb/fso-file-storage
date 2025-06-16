@@ -17,21 +17,23 @@ It acts as a mini file manager for local file storage using Java GUI.
 ## Technologies Used
   GUI Framework -- Java Swing                             
 
-##  Project Structure
-The workspace contains two folders by default, where:
+#### How to Run Unit & Integration Tests
+This project uses JUnit and Mockito for unit testing, and supports AWS integration tests via Maven runtime parameters.
 
-- `src`: the folder to maintain sources
-- `lib`: the folder to maintain dependencies
+###  Run Tests with AWS Credentials (Integration Tests Enabled)
+  mvn clean install \
+    -Daws.accessKey=YOUR_ACCESS_KEY \
+    -Daws.secretKey=YOUR_SECRET_KEY \
+    -Daws.region=us-east-1 \
+    -Daws.bucketName=your-s3-bucket-name
+  
+  Replace the placeholders with your actual AWS credentials and S3 bucket.
 
-Meanwhile, the compiled output files will be generated in the `bin` folder by default.
+  This runs unit tests and any integration tests requiring a live AWS S3 connection.
+
 
 ##  How to Run the Application (Eclipse)
    - Right-click LocalFileStorageApp.java → Run As → Java Application
    - The Swing GUI window will launch, and the app will create a 'local_storage' folder in your project directory.
 
-> Alternatively, compile and run from terminal:
-
-```bash
-cd src
-javac LocalFileStorageApp.java LocalStorageManager.java
-java LocalFileStorageApp
+Meanwhile, the compiled output files will be generated in the `bin` folder by default.

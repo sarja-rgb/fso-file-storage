@@ -24,12 +24,15 @@ public class S3CloudStorageIntegrationTest {
 
     @BeforeAll
     public static void setup() throws Exception {
-        //AwsS3Credential credential = AwsS3Util.loadEncryptedCredentials(new File("s3_secrets"));
+        String accessKey = System.getProperty("aws.accessKey");
+        String secretKey = System.getProperty("aws.secretKey");
+        String region = System.getProperty("aws.region");
+        String bucketName = System.getProperty("aws.bucketName");
         awsS3Credential = new AwsS3Credential();
-        awsS3Credential.setRegion("us-west-2");
-        awsS3Credential.setAccessKey("AKIAQQ7BMHSMLFNSTCMC");
-        awsS3Credential.setSecretKey("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");
-        awsS3Credential.setBucketName("cloudstore0625");
+        awsS3Credential.setAccessKey(accessKey);
+        awsS3Credential.setSecretKey(secretKey);
+        awsS3Credential.setRegion(region);
+        awsS3Credential.setBucketName(bucketName);
         s3CloudStoreOperations = new S3CloudStoreOperations(awsS3Credential);
         tempFile = new File(TEST_FILE_NAME);
         try (FileWriter writer = new FileWriter(tempFile)) {
