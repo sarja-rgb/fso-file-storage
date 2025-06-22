@@ -13,7 +13,7 @@ public class FileObject {
     private long fileSize;
     private String filePath;
     private String checksum;
-    private int version;
+    private String version;
 
     
     public String getFileName() {
@@ -60,10 +60,10 @@ public class FileObject {
     public void setChecksum(String checksum) {
       this.checksum = checksum;
     }
-    public int getVersion() {
+    public String getVersion() {
       return version;
     }
-    public void setVersion(int version) {
+    public void setVersion(String version) {
       this.version = version;
     }
     
@@ -129,7 +129,7 @@ public class FileObject {
            return this;
         }
 
-        public FileObjectBuilder setVersion(int version) {
+        public FileObjectBuilder setVersion(String version) {
            this.fileObject.setVersion(version);
            return this;
         }

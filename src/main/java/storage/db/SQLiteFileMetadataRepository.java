@@ -169,7 +169,7 @@ public class SQLiteFileMetadataRepository implements FileMetadataRepository {
                     .setFilePath(resultSet.getString("file_path"))
                     .setFileSize(resultSet.getLong("file_size"))
                     .setCheckSum(resultSet.getString("checksum"))
-                    .setVersion(resultSet.getInt("version"))
+                    .setVersion(resultSet.getString("version"))
                     .setBucketName(resultSet.getString("bucket"))
                     .setLastModifiedDate(new java.util.Date(modifiedDate.getTime()))
                     .build();
@@ -186,6 +186,8 @@ public class SQLiteFileMetadataRepository implements FileMetadataRepository {
         stmt.setDate(4, new Date(fileObject.getLastModifiedDate().getTime()));
         stmt.setString(5,fileObject.getChecksum());
         stmt.setString(6,fileObject.getBucketName());
+        stmt.setString(7,fileObject.getVersion());
+
     }
 
 }
