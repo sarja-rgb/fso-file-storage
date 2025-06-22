@@ -57,30 +57,26 @@ public class SQLiteFileMetadataRepository implements FileMetadataRepository {
      */
     @Override
     public void saveOrUpdate(FileObject file) {
-        String sql = """
-            INSERT INTO file_metadata (file_name, file_path, file_size, last_modified_date, checksum, bucket)
-            VALUES (?, ?, ?, ?, ?, ?)
-            ON CONFLICT(file_name) DO UPDATE SET
-              last_modified_date = excluded.last_modified_date,
-              checksum = excluded.checksum,
-              version = file_metadata.version + 1;
-        """;
-
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, file.getFileName());
-            stmt.setString(2, file.getFilePath());
-            stmt.setLong(3, file.getFileSize());
-            stmt.setString(5,file.getChecksum());
-            stmt.setString(6,file.getBucketName());
-            if(file.getLastModifiedDate() != null){
-               Date sqlDate = new Date(file.getLastModifiedDate().getTime());
-               stmt.setDate(4, sqlDate);
-            }
+        try (PreparedStatement stmt = connection.prepareStatement(SqlUtil.FILE_METADATA_SAVE_UPDATE_SQL)) {
+            prepareSaveOrUpdateStatement(file, stmt);
             stmt.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException("Failed to save or update file", e);
         }
     }
+
+        @Override
+    public void saveOrUpdateFiles(List<FileObject> files) {
+        try (PreparedStatement stmt = connection.prepareStatement(SqlUtil.FILE_METADATA_SAVE_UPDATE_SQL)) {
+            for (FileObject file : files) {
+                prepareSaveOrUpdateStatement(file, stmt);
+                stmt.addBatch();
+            }
+            stmt.executeBatch();
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to save or update files batch", e);
+        }
+    }  
 
     /**
      * Retrieves a file metadata entry by its name.
@@ -181,6 +177,15 @@ public class SQLiteFileMetadataRepository implements FileMetadataRepository {
             ex.printStackTrace();
         }
         return null;
+    }
+
+    private void prepareSaveOrUpdateStatement(FileObject fileObject, PreparedStatement stmt) throws SQLException {
+        stmt.setString(1, fileObject.getFileName());
+        stmt.setString(2, fileObject.getFilePath());
+        stmt.setLong(3, fileObject.getFileSize());
+        stmt.setDate(4, new Date(fileObject.getLastModifiedDate().getTime()));
+        stmt.setString(5,fileObject.getChecksum());
+        stmt.setString(6,fileObject.getBucketName());
     }
 
 }

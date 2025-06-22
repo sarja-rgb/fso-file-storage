@@ -9,13 +9,19 @@ import storage.FileObject;
  * in a persistent storage (e.g., SQL database).
  */
 public interface FileMetadataRepository {
-
     /**
      * Saves a new file metadata entry or updates an existing one.
      *
      * @param file the FileObject to save or update
      */
-    void saveOrUpdate(FileObject file);
+    public void saveOrUpdate(FileObject file);
+
+    /**
+     * Save list of file object metadata entries or update an existing files.
+     *
+     * @param files the list of File objects to save or update
+     */
+    public void saveOrUpdateFiles(List<FileObject> files);
 
     /**
      * Finds a file metadata entry by its name.
