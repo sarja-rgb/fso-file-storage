@@ -2,6 +2,7 @@ package storage.db;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -54,6 +55,32 @@ public class SQLiteFileMetadataRepositoryTest {
         assertNotNull(retrieved);
         assertEquals(file.getFileName(), retrieved.getFileName());
         assertEquals(file.getChecksum(), retrieved.getChecksum());
+        assertEquals(1, retrieved.getVersion());
+    }
+
+      @Test
+    public void testSaveAllAndRetrieve() { 
+        List<FileObject> fileObjects = new ArrayList<>();
+        for(int index = 0; index < 5; index++){
+            String fileName = "sample_file "+index + ".txt";
+            FileObject file = FileObject.builder()
+                                .setFileName(fileName)
+                                .setFilePath("/data/"+fileName)
+                                .setFileSize(5120L)
+                                .setCheckSum("abc123")
+                                .setBucketName("main")
+                                .setLastModifiedDate(new Date())
+                                .build();
+            fileObjects.add(file);
+        }
+      
+        repository.saveOrUpdateFiles(fileObjects);
+        FileObject fileObject = fileObjects.get(0);
+        FileObject retrieved = repository.findByName(fileObject.getFileName());
+        System.out.println("##### Retried file "+retrieved);
+        assertNotNull(retrieved);
+        assertEquals(fileObject.getFileName(), retrieved.getFileName());
+        assertEquals(fileObject.getChecksum(), retrieved.getChecksum());
         assertEquals(1, retrieved.getVersion());
     }
 
