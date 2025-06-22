@@ -48,8 +48,8 @@ public class SQLiteFileMetadataRepository implements FileMetadataRepository {
                             checksum TEXT NOT NULL,
                             file_path TEXT,
                             file_size INTEGER,
-                            version TEXT,
-                            bucket TEXT
+                            version INTEGER DEFAULT 1,
+                            bucket TEXT NOT NULL
                         );
                """;
 
@@ -69,11 +69,12 @@ public class SQLiteFileMetadataRepository implements FileMetadataRepository {
     @Override
     public void saveOrUpdate(FileObject file) {
         String sql = """
-            INSERT INTO file_metadata (file_name, file_path, file_size, last_modified_date, checksum, version, bucket)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO file_metadata (file_name, file_path, file_size, last_modified_date, checksum, bucket)
+            VALUES (?, ?, ?, ?, ?, ?)
             ON CONFLICT(file_name) DO UPDATE SET
               last_modified_date = excluded.last_modified_date,
-              checksum = excluded.checksum;
+              checksum = excluded.checksum,
+              version = file_metadata.version + 1;
         """;
 
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
@@ -81,8 +82,7 @@ public class SQLiteFileMetadataRepository implements FileMetadataRepository {
             stmt.setString(2, file.getFilePath());
             stmt.setLong(3, file.getFileSize());
             stmt.setString(5,file.getChecksum());
-            stmt.setString(6,file.getVersion());
-            stmt.setString(7,file.getBucketName());
+            stmt.setString(6,file.getBucketName());
             if(file.getLastModifiedDate() != null){
                Date sqlDate = new Date(file.getLastModifiedDate().getTime());
                stmt.setDate(4, sqlDate);
@@ -184,7 +184,7 @@ public class SQLiteFileMetadataRepository implements FileMetadataRepository {
                     .setFilePath(resultSet.getString("file_path"))
                     .setFileSize(resultSet.getLong("file_size"))
                     .setCheckSum(resultSet.getString("checksum"))
-                    .setVersion(resultSet.getString("version"))
+                    .setVersion(resultSet.getInt("version"))
                     .setBucketName(resultSet.getString("bucket"))
                     .setLastModifiedDate(new java.util.Date(modifiedDate.getTime()))
                     .build();
