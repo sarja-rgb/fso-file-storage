@@ -46,6 +46,7 @@ public class SQLiteFileMetadataRepositoryTest {
                 .setFileSize(5120L)
                 .setCheckSum("abc123")
                 .setBucketName("main")
+                .setVersion("1")
                 .setLastModifiedDate(new Date())
                 .build();
 
@@ -55,7 +56,7 @@ public class SQLiteFileMetadataRepositoryTest {
         assertNotNull(retrieved);
         assertEquals(file.getFileName(), retrieved.getFileName());
         assertEquals(file.getChecksum(), retrieved.getChecksum());
-        assertEquals(1, retrieved.getVersion());
+        assertEquals("1", retrieved.getVersion());
     }
 
       @Test
@@ -70,6 +71,7 @@ public class SQLiteFileMetadataRepositoryTest {
                                 .setCheckSum("abc123")
                                 .setBucketName("main")
                                 .setLastModifiedDate(new Date())
+                                .setVersion("1")
                                 .build();
             fileObjects.add(file);
         }
@@ -81,7 +83,7 @@ public class SQLiteFileMetadataRepositoryTest {
         assertNotNull(retrieved);
         assertEquals(fileObject.getFileName(), retrieved.getFileName());
         assertEquals(fileObject.getChecksum(), retrieved.getChecksum());
-        assertEquals(1, retrieved.getVersion());
+        assertEquals("1", retrieved.getVersion());
     }
 
     @Test
@@ -92,6 +94,7 @@ public class SQLiteFileMetadataRepositoryTest {
                 .setFileSize(1024L)
                 .setCheckSum("delete123")
                 .setBucketName("trash")
+                .setVersion("1")
                 .setLastModifiedDate(new Date())
                 .build();
 
@@ -110,6 +113,7 @@ public class SQLiteFileMetadataRepositoryTest {
                 .setFileSize(2048L)
                 .setCheckSum("oldsum")
                 .setBucketName("bucket")
+                 .setVersion("1")
                 .setLastModifiedDate(new Date())
                 .build();
 
@@ -121,6 +125,7 @@ public class SQLiteFileMetadataRepositoryTest {
                 .setFileSize(2048L)
                 .setCheckSum("newsum")
                 .setBucketName("bucket")
+                 .setVersion("2")
                 .setLastModifiedDate(new Date())
                 .build();
 
@@ -128,7 +133,7 @@ public class SQLiteFileMetadataRepositoryTest {
 
         FileObject retrieved = repository.findByName("update.txt");
         assertEquals("newsum", retrieved.getChecksum());
-        assertEquals(2, retrieved.getVersion());
+        assertEquals("2", retrieved.getVersion());
     }
 
     @Test
@@ -139,6 +144,7 @@ public class SQLiteFileMetadataRepositoryTest {
                 .setFileSize(2048L)
                 .setCheckSum("f1")
                 .setBucketName("bucket1")
+                .setVersion("1")
                 .setLastModifiedDate(new Date())
                 .build();
 
@@ -149,6 +155,7 @@ public class SQLiteFileMetadataRepositoryTest {
                 .setCheckSum("f2")
                 .setBucketName("bucket2")
                 .setLastModifiedDate(new Date())
+                .setVersion("1")
                 .build();
 
         repository.saveOrUpdate(file1);
