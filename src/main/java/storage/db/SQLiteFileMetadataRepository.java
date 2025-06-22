@@ -42,16 +42,16 @@ public class SQLiteFileMetadataRepository implements FileMetadataRepository {
      */
     private void createTableIfNotExists() {
         String sql = """
-                                 CREATE TABLE IF NOT EXISTS file_metadata (
-                                    file_name TEXT PRIMARY KEY,
-                                    last_modified INTEGER NOT NULL,
-                                    checksum TEXT NOT NULL,
-                                    file_path TEXT NULL,
-                                    file_size INTEGER 
-                                    version TEXT NULL,
-                                    bucket TEXT NUL,
-                                 );
-                             """;
+                        CREATE TABLE IF NOT EXISTS file_metadata (
+                            file_name TEXT PRIMARY KEY,
+                            last_modified_date INTEGER NOT NULL,
+                            checksum TEXT NOT NULL,
+                            file_path TEXT,
+                            file_size INTEGER,
+                            version TEXT,
+                            bucket TEXT
+                        );
+               """;
 
         try (Statement stmt = connection.createStatement()) {
             stmt.execute(sql);
@@ -69,10 +69,10 @@ public class SQLiteFileMetadataRepository implements FileMetadataRepository {
     @Override
     public void saveOrUpdate(FileObject file) {
         String sql = """
-            INSERT INTO file_metadata (file_name, file_path, file_size, last_modified, checksum, version, bucket)
+            INSERT INTO file_metadata (file_name, file_path, file_size, last_modified_date, checksum, version, bucket)
             VALUES (?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT(name) DO UPDATE SET
-              last_modified = excluded.last_modified,
+            ON CONFLICT(file_name) DO UPDATE SET
+              last_modified_date = excluded.last_modified_date,
               checksum = excluded.checksum;
         """;
 
@@ -177,12 +177,13 @@ public class SQLiteFileMetadataRepository implements FileMetadataRepository {
 
     private FileObject mapRow(ResultSet resultSet) {
         try {
+
             Date modifiedDate  =  resultSet.getDate("last_modified_date");
             return FileObject.builder()
                     .setFileName(resultSet.getString("file_name"))
                     .setFilePath(resultSet.getString("file_path"))
                     .setFileSize(resultSet.getLong("file_size"))
-                    .setCheckSum(resultSet.getString("check_sum"))
+                    .setCheckSum(resultSet.getString("checksum"))
                     .setVersion(resultSet.getString("version"))
                     .setBucketName(resultSet.getString("bucket"))
                     .setLastModifiedDate(new java.util.Date(modifiedDate.getTime()))
