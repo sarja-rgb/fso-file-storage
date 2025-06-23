@@ -7,7 +7,6 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -35,9 +34,9 @@ import storage.FileStoreException;
 import storage.S3CloudStoreOperations;
 import storage.db.FileMetadataRepository;
 import storage.db.SQLiteFileMetadataRepository;
+import storage.db.SqlConnectionManager;
 import util.AwsS3Util;
 import util.FileUtil;
-import util.SqlUtil;
 
 /**
  * CloudFileStorageUI is the main Swing-based graphical interface for
@@ -93,7 +92,7 @@ public class CloudFileStorageUI extends JFrame implements BaseFileStorageUI {
 		} catch (IOException e) {
 		    System.out.println("Error loading AWS credentials");
 		}
-        initDataConnection();
+        initFileMetaRepository();
         cloudStoreOperations = new S3CloudStoreOperations(awsS3Credential);
         fileSyncHandle  = new S3LocalFileSyncHandle(fileMetadataRepository, cloudStoreOperations);
         FileEventListener fileEventListener = new SqlFileEventListener(fileMetadataRepository);
@@ -124,9 +123,12 @@ public class CloudFileStorageUI extends JFrame implements BaseFileStorageUI {
         });
     }
 
-    private void initDataConnection()  {
+    /**
+     * Initialize File Meta tracker repository
+     */
+    private void initFileMetaRepository()  {
         try {
-            connection = DriverManager.getConnection(SqlUtil.SQLITE_DB_STRING);
+            connection = SqlConnectionManager.getConnection();
             fileMetadataRepository = new SQLiteFileMetadataRepository(connection);
         } catch (SQLException e) {
             e.printStackTrace();

@@ -9,14 +9,37 @@ import storage.FileStoreException;
 import storage.FileStoreOperations;
 import storage.db.FileMetadataRepository;
 
+/**
+ * S3LocalFileSyncHandle is an implementation of the FileSyncHandle interface
+ * that synchronizes files between a remote S3-compatible file store and a
+ * local metadata repository (e.g., SQLite).
+ *
+ * It compares metadata between cloud and local entries, resolves conflicts
+ * based on strategies (e.g., last modified date), and tracks both unresolved
+ * and conflicted files.
+ */
 public class S3LocalFileSyncHandle implements FileSyncHandle {
+
+    // Local metadata repository (e.g., SQLite-backed)
     private final FileMetadataRepository fileMetadataRepository;
+
+    // Remote file storage system (e.g., Amazon S3)
     private final FileStoreOperations fileStoreOperations;
+
+    // List of files that couldn't be resolved during sync
     private final List<FileObject> unresolvedFiles;
+
+    // List of files that had metadata conflicts during sync
     private final List<FileObject> conflictedFiles;
 
+    /**
+     * Constructs a new S3LocalFileSyncHandle.
+     *
+     * @param fileMetadataRepository  the local file metadata store
+     * @param fileStoreOperations     the cloud-based file storage system (S3)
+     */
     public S3LocalFileSyncHandle(FileMetadataRepository fileMetadataRepository,
-            FileStoreOperations fileStoreOperations) {
+                                 FileStoreOperations fileStoreOperations) {
         this.fileMetadataRepository = fileMetadataRepository;
         this.fileStoreOperations = fileStoreOperations;
         unresolvedFiles = new ArrayList<>();
@@ -48,11 +71,14 @@ public class S3LocalFileSyncHandle implements FileSyncHandle {
                 }
             }
         }
-
+       
         if(!unresolvedFiles.isEmpty()){
           System.out.println("Save and update unresolve files, count : "+unresolvedFiles.size());
           fileMetadataRepository.saveOrUpdateFiles(fileObjects);
           unresolvedFiles.clear();
+        }
+        else{
+            System.out.println("File unresolves are empty");
         }
     }
 
@@ -63,7 +89,8 @@ public class S3LocalFileSyncHandle implements FileSyncHandle {
     @Override
     public FileObject resolveConflict(FileObject localFile, FileObject remoteFile) {
        // Strategy: keep the newer one
-    return remoteFile.getLastModifiedDate().after(localFile.getLastModifiedDate())
+    return (remoteFile.getLastModifiedDate().after(localFile.getLastModifiedDate()) || 
+            remoteFile.getLastModifiedDate().equals(localFile.getLastModifiedDate()))
             ? remoteFile
             : localFile;
     }
@@ -78,16 +105,8 @@ public class S3LocalFileSyncHandle implements FileSyncHandle {
      * Conflict is detected by checksum or modified date mismatch.
      */
     private boolean isConflict(FileObject localFileObject, FileObject remoteFileObject) {
-        System.out.println("\n-----------------------");
-        System.out.println("localFileObject.checkSum "+localFileObject.getChecksum());
-        System.out.println("localFileObject.getLastModifiedDate "+localFileObject.getLastModifiedDate());
-
-        System.out.println("remoteFileObject.checkSum "+remoteFileObject.getChecksum());
-        System.out.println("remoteFileObject.getLastModifiedDate "+remoteFileObject.getLastModifiedDate());
-        System.out.println("-------------------------\n");
-
         // Conflict if checksums differ or last modified timestamps disagree
-    return !Objects.equals(localFileObject.getChecksum(), remoteFileObject.getChecksum())
+        return !Objects.equals(localFileObject.getChecksum(), remoteFileObject.getChecksum())
         || !Objects.equals(localFileObject.getLastModifiedDate(), remoteFileObject.getLastModifiedDate());
     }
 
@@ -114,6 +133,7 @@ public class S3LocalFileSyncHandle implements FileSyncHandle {
             FileObject local = fileMetadataRepository.findByName(remote.getFileName());
 
             if (local == null || isConflict(local, remote)) {
+                System.out.println("isConflict(local, remote) "+isConflict(local, remote));
                 unresolved.add(remote);
             }
         }
