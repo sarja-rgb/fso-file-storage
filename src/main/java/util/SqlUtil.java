@@ -8,11 +8,11 @@ public class SqlUtil {
     private SqlUtil(){}
     //The SQL database file name
     public static final String SQLITE_DB_STRING = "jdbc:sqlite:cloud_store.db";
-    
+
     //The SQL database schema
     public static final String FILE_METADATA_SQL_SCHEMA =  """
                         CREATE TABLE IF NOT EXISTS file_metadata (
-                            file_name TEXT PRIMARY KEY,
+                            file_name TEXT UNIQUE NOT NULL,
                             last_modified_date INTEGER NOT NULL,
                             checksum TEXT NOT NULL,
                             file_path TEXT,
@@ -30,6 +30,7 @@ public class SqlUtil {
                             VALUES (?, ?, ?, ?, ?, ?, ?)
                             ON CONFLICT(file_name) DO UPDATE SET
                             last_modified_date = excluded.last_modified_date,
+                            file_size = excluded.file_size,
                             checksum = excluded.checksum,
                             version = excluded.version;
                         """;
