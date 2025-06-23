@@ -45,4 +45,9 @@ public interface FileManager {
 	 * @return the path as a string, or null if nothing is selected
 	 */
 	public FileObject getSelectedFile();
+
+	/**
+	 *  Sync up files
+	 */
+	public void syncFile();
 }

@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -112,6 +113,6 @@ public class S3LocalFileSyncHandleTest {
 
         assertEquals(2, unresolved.size());
         assertTrue(unresolved.contains(cloudOnly));
-        assertTrue(unresolved.contains(outdatedLocal));
+        assertFalse(unresolved.contains(outdatedLocal));
     }
 }

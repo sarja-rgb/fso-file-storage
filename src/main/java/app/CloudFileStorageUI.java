@@ -6,6 +6,9 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.List;
 
 import javax.swing.JFrame;
@@ -20,13 +23,20 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
+import handles.FileSyncHandle;
+import handles.S3LocalFileSyncHandle;
+import listeners.FileEventListener;
 import listeners.FolderTreeSelectionHandler;
+import listeners.SqlFileEventListener;
 import storage.AwsLoginDialog;
 import storage.AwsS3Credential;
 import storage.FileObject;
 import storage.S3CloudStoreOperations;
+import storage.db.FileMetadataRepository;
+import storage.db.SQLiteFileMetadataRepository;
 import util.AwsS3Util;
 import util.FileUtil;
+import util.SqlUtil;
 
 /**
  * CloudFileStorageUI is the main Swing-based graphical interface for
@@ -53,6 +63,10 @@ public class CloudFileStorageUI extends JFrame implements BaseFileStorageUI {
     private S3CloudStoreOperations cloudStoreOperations;
 
 	private AwsS3Credential awsS3Credential;
+
+    private Connection connection;
+    private FileMetadataRepository fileMetadataRepository;
+    private FileSyncHandle fileSyncHandle;
     /**
      * Constructor initializes and builds the GUI layout and components.
      */
@@ -76,15 +90,17 @@ public class CloudFileStorageUI extends JFrame implements BaseFileStorageUI {
 		} catch (IOException e) {
 		    System.out.println("Error loading AWS credentials");
 		}
+        initDataConnection();
         cloudStoreOperations = new S3CloudStoreOperations(awsS3Credential);
-        fileManager = new S3CloudManagerImpl(this, cloudStoreOperations);
+        fileSyncHandle  = new S3LocalFileSyncHandle(fileMetadataRepository, cloudStoreOperations);
+        FileEventListener fileEventListener = new SqlFileEventListener(fileMetadataRepository);
+        fileManager = new S3CloudManagerImpl(this, cloudStoreOperations,fileEventListener,fileSyncHandle);
 
         FileMenuBar menuBar = new FileMenuBar(this, fileManager);
         setJMenuBar(menuBar.getMenuBar());
 
         setupMainPanel();
         fileManager.listFiles(); // Load initial file list
-
 		addWindowListener(new WindowAdapter() {
                @Override
                public void windowOpened(WindowEvent e) {
@@ -99,6 +115,15 @@ public class CloudFileStorageUI extends JFrame implements BaseFileStorageUI {
                    System.out.println("Window Activated");
                }
         });
+    }
+
+    private void initDataConnection()  {
+        try {
+            connection = DriverManager.getConnection(SqlUtil.SQLITE_DB_STRING);
+            fileMetadataRepository = new SQLiteFileMetadataRepository(connection);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
