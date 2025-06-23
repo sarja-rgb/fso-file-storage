@@ -12,6 +12,9 @@ public class FileObject {
     private Date lastModifiedDate;
     private long fileSize;
     private String filePath;
+    private String checksum;
+    private String version;
+
     
     public String getFileName() {
       return fileName;
@@ -51,6 +54,20 @@ public class FileObject {
       this.filePath = filePath;
     }
 
+    public String getChecksum() {
+      return checksum;
+    }
+    public void setChecksum(String checksum) {
+      this.checksum = checksum;
+    }
+    public String getVersion() {
+      return version;
+    }
+    public void setVersion(String version) {
+      this.version = version;
+    }
+    
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -61,6 +78,8 @@ public class FileObject {
         sb.append(", lastModifiedDate=").append(lastModifiedDate);
         sb.append(", fileSize=").append(fileSize);
         sb.append(", filePath=").append(filePath);
+        sb.append(", checkSum=").append(checksum);
+        sb.append(", version=").append(version);
         sb.append('}');
         return sb.toString();
     }
@@ -68,8 +87,6 @@ public class FileObject {
     public static FileObjectBuilder builder(){
        return new FileObjectBuilder();
     }
-
-  
 
 
     public static class FileObjectBuilder{
@@ -104,10 +121,21 @@ public class FileObject {
            return this;
         }
 
-          public FileObjectBuilder setFilePath(String filePath) {
+        public FileObjectBuilder setFilePath(String filePath) {
            this.fileObject.setFilePath(filePath);
            return this;
         }
+
+          public FileObjectBuilder setCheckSum(String checksum) {
+           this.fileObject.setChecksum(checksum);
+           return this;
+        }
+
+        public FileObjectBuilder setVersion(String version) {
+           this.fileObject.setVersion(version);
+           return this;
+        }
+
         public FileObject build(){
           return fileObject;
         }

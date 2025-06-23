@@ -6,6 +6,8 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 
 import javax.swing.JFrame;
@@ -20,11 +22,19 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
+import handles.FileSyncHandle;
+import handles.S3LocalFileSyncHandle;
+import listeners.FileEventListener;
 import listeners.FolderTreeSelectionHandler;
+import listeners.SqlFileEventListener;
 import storage.AwsLoginDialog;
 import storage.AwsS3Credential;
 import storage.FileObject;
+import storage.FileStoreException;
 import storage.S3CloudStoreOperations;
+import storage.db.FileMetadataRepository;
+import storage.db.SQLiteFileMetadataRepository;
+import storage.db.SqlConnectionManager;
 import util.AwsS3Util;
 import util.FileUtil;
 
@@ -53,6 +63,12 @@ public class CloudFileStorageUI extends JFrame implements BaseFileStorageUI {
     private S3CloudStoreOperations cloudStoreOperations;
 
 	private AwsS3Credential awsS3Credential;
+
+    private Connection connection;
+    private FileMetadataRepository fileMetadataRepository;
+    private FileSyncHandle fileSyncHandle;
+
+    private boolean isWindowOpened = false;
     /**
      * Constructor initializes and builds the GUI layout and components.
      */
@@ -76,22 +92,28 @@ public class CloudFileStorageUI extends JFrame implements BaseFileStorageUI {
 		} catch (IOException e) {
 		    System.out.println("Error loading AWS credentials");
 		}
+        initFileMetaRepository();
         cloudStoreOperations = new S3CloudStoreOperations(awsS3Credential);
-        fileManager = new S3CloudManagerImpl(this, cloudStoreOperations);
+        fileSyncHandle  = new S3LocalFileSyncHandle(fileMetadataRepository, cloudStoreOperations);
+        FileEventListener fileEventListener = new SqlFileEventListener(fileMetadataRepository);
+        fileManager = new S3CloudManagerImpl(this, cloudStoreOperations,fileEventListener,fileSyncHandle);
 
         FileMenuBar menuBar = new FileMenuBar(this, fileManager);
         setJMenuBar(menuBar.getMenuBar());
 
         setupMainPanel();
         fileManager.listFiles(); // Load initial file list
-
 		addWindowListener(new WindowAdapter() {
                @Override
                public void windowOpened(WindowEvent e) {
                    System.out.println("Window Opened");
 				  if(awsS3Credential == null){
                      showAlertMessage("AWS S3 Credentials not found. Please login the S3 credentials.");
-				  }  
+				  }
+                  else{
+                    showUnResolveFiles();
+                  }
+                  isWindowOpened = true;
                }
 
                @Override
@@ -99,6 +121,18 @@ public class CloudFileStorageUI extends JFrame implements BaseFileStorageUI {
                    System.out.println("Window Activated");
                }
         });
+    }
+
+    /**
+     * Initialize File Meta tracker repository
+     */
+    private void initFileMetaRepository()  {
+        try {
+            connection = SqlConnectionManager.getConnection();
+            fileMetadataRepository = new SQLiteFileMetadataRepository(connection);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -130,6 +164,8 @@ public class CloudFileStorageUI extends JFrame implements BaseFileStorageUI {
         for (FileObject fileObject : files) {
             addFileToTableRecursive(fileObject);
         }
+
+        showUnResolveFiles();
     }
 
     /**
@@ -273,4 +309,30 @@ public class CloudFileStorageUI extends JFrame implements BaseFileStorageUI {
 		return (fileObject.getFileType() == null || fileObject.getFileType().isEmpty())? 
 		            FileUtil.DEFAULT_OBJECT_TYPE: fileObject.getFileType();
 	}
+
+    /**
+     * Show unresolve files alert message
+     */
+    private void showUnResolveFiles(){
+        if(!this.isWindowOpened){
+            return;
+        }
+
+        try {
+            List<FileObject> unResolveFiles = fileSyncHandle.unResolveFiles();
+            if(!unResolveFiles.isEmpty()){
+              String msg = String.format("There is are %d unresolve files. Please sync the files", unResolveFiles.size());
+              for(FileObject fileObject: unResolveFiles){
+                System.err.println("Unresolved file : "+fileObject);
+              }
+              this.showAlertMessage(msg);
+            }
+            else{
+               System.out.println("All files are in sync.....");
+            }
+        } catch (FileStoreException ex) {
+            System.out.println("Error file unresolve query error "+ex.getMessage());
+            ex.printStackTrace();
+        }
+    }
 }

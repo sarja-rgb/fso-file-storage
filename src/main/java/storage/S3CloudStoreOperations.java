@@ -2,8 +2,10 @@ package storage;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
+
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -14,6 +16,8 @@ import com.amazonaws.services.s3.model.ListObjectsV2Result;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectResult;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+
+import handles.S3ClientHandle;
 import util.AwsS3Util;
 
 /**
@@ -79,12 +83,31 @@ public class S3CloudStoreOperations implements FileStoreOperations, S3ClientHand
      * @throws FileStoreException on failure or credential error
      */
     @Override
-    public void save(File file) throws FileStoreException {
+    public FileObject save(File file) throws FileStoreException {
         try {
-            if (!file.exists()) return;
             PutObjectRequest request = new PutObjectRequest(awsS3Credential.getBucketName(), file.getName(), file);
             PutObjectResult objectResult = s3Client.putObject(request);
             System.out.println("Save object result: " + objectResult);
+            Date modifiedDate = (objectResult != null && objectResult.getMetadata() != null && 
+                                 objectResult.getMetadata().getLastModified() != null)? 
+                                 objectResult.getMetadata().getLastModified() : new Date();
+             
+            String version = (objectResult != null && objectResult.getVersionId() != null)? 
+                                objectResult.getVersionId(): "1";
+            String checkSum = (objectResult != null)? objectResult.getETag(): "";
+            System.out.println("###    Date modifiedDate ="+modifiedDate);
+            System.out.println("###    Version ="+version);
+            System.out.println("###    checkSum ="+checkSum);
+
+            return FileObject.builder()
+                            .setFileName(file.getName())
+                            .setLastModifiedDate(modifiedDate)
+                            .setBucketName(awsS3Credential.getBucketName())
+                            .setFilePath(file.getAbsolutePath())
+                            .setFileSize(file.getFreeSpace())
+                            .setVersion(version)
+                            .setCheckSum(checkSum)
+                            .build();
         } catch (NullPointerException | AmazonServiceException ex) {
             throw new FileStoreException("Failed to save AWS S3 object. Check your credentials", ex);
         }
@@ -137,7 +160,9 @@ public class S3CloudStoreOperations implements FileStoreOperations, S3ClientHand
                     .setBucketName(object.getBucketName())
                     .setFileSize(object.getSize())
                     .setLastModifiedDate(object.getLastModified())
+                    .setCheckSum(object.getETag())
                     .build()).collect(Collectors.toList());
+
         } catch (NullPointerException | AmazonServiceException ex) {
             throw new FileStoreException("AWS Credentials error. Ensure credentials are configured correctly.", ex);
         }

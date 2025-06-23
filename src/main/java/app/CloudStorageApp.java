@@ -1,7 +1,10 @@
 package app;
 
 import java.io.IOException;
+import java.sql.SQLException;
+
 import javax.swing.SwingUtilities;
+
 import util.AwsS3Util;
 /**
  * Cloud StorageApp is the main GUI application class. It provides a Swing-based
@@ -14,8 +17,9 @@ public class CloudStorageApp  {
 	 * Main method to launch the application.
 	 *
 	 * @param args Command-line arguments (not used).
+	 * @throws SQLException 
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws SQLException {
 		try {
 			AwsS3Util.initializeEncryptionKey(); // Ensure AES key exists
 		} catch (IOException e) {

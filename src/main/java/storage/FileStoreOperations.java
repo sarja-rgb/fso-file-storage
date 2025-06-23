@@ -16,8 +16,9 @@ public interface FileStoreOperations {
      *
      * @param file the file to be saved
      * @throws FileStoreException if the save operation fails
+     * @returns FileObject
      */
-    public void save(File file) throws FileStoreException;
+    public FileObject save(File file) throws FileStoreException;
 
     /**
      * Saves multiple files to the storage system.
