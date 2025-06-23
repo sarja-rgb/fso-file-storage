@@ -60,6 +60,7 @@ public class SQLiteFileMetadataRepository implements FileMetadataRepository {
         try (PreparedStatement stmt = connection.prepareStatement(SqlUtil.FILE_METADATA_SAVE_UPDATE_SQL)) {
             prepareSaveOrUpdateStatement(file, stmt);
             stmt.executeUpdate();
+            System.out.println("######File object saved in DB "+file);
         } catch (SQLException e) {
             throw new RuntimeException("Failed to save or update file", e);
         }
@@ -186,8 +187,7 @@ public class SQLiteFileMetadataRepository implements FileMetadataRepository {
         stmt.setDate(4, new Date(fileObject.getLastModifiedDate().getTime()));
         stmt.setString(5,fileObject.getChecksum());
         stmt.setString(6,fileObject.getBucketName());
-        stmt.setString(7,fileObject.getVersion());
-
+        stmt.setString(7,fileObject.getVersion() != null? fileObject.getVersion() : "1");
     }
 
 }

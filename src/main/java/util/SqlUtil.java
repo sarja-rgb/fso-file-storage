@@ -1,8 +1,15 @@
 package util;
 
+/***
+ * The util class containers the SQLdatabase schema  of the File Tracker
+ * and insert query statements
+ */
 public class SqlUtil {
     private SqlUtil(){}
+    //The SQL database file name
     public static final String SQLITE_DB_STRING = "jdbc:sqlite:cloud_store.db";
+    
+    //The SQL database schema
     public static final String FILE_METADATA_SQL_SCHEMA =  """
                         CREATE TABLE IF NOT EXISTS file_metadata (
                             file_name TEXT PRIMARY KEY,
@@ -15,6 +22,9 @@ public class SqlUtil {
                         );
                """;
    
+    /**
+    * Insert or update SQL statement
+    */
     public static final String FILE_METADATA_SAVE_UPDATE_SQL= """
                             INSERT INTO file_metadata (file_name, file_path, file_size, last_modified_date, checksum, bucket, version)
                             VALUES (?, ?, ?, ?, ?, ?, ?)

@@ -78,6 +78,8 @@ public class FileObject {
         sb.append(", lastModifiedDate=").append(lastModifiedDate);
         sb.append(", fileSize=").append(fileSize);
         sb.append(", filePath=").append(filePath);
+        sb.append(", checkSum=").append(checksum);
+        sb.append(", version=").append(version);
         sb.append('}');
         return sb.toString();
     }

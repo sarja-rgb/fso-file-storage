@@ -3,6 +3,7 @@ package app;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+
 import storage.FileObject;
 
 /**
@@ -12,6 +13,7 @@ import storage.FileObject;
 public class FileMenuBar {
 	private JMenuBar menuBar;
 	private final BaseFileStorageUI parentUI;
+	private final FileManager fileManager; 
 
 	public FileMenuBar(FileManager fileManager) {
 	     this(null,fileManager);
@@ -19,6 +21,7 @@ public class FileMenuBar {
 
 	public FileMenuBar(BaseFileStorageUI parentUI, FileManager fileManager) {
 		  this.parentUI = parentUI;
+		  this.fileManager = fileManager;
 		  init(fileManager);
 	}
 
@@ -64,10 +67,14 @@ public class FileMenuBar {
 		//Menu Item to sync local files to cloud storage
 		JMenu cloudMenu = new JMenu("Cloud");
 		JMenuItem awsS3LoginDialogItem = new JMenuItem("AWS S3 Login"); 
+		JMenuItem s3FileSync = new JMenuItem("AWS S3 Sync"); 
+
 		if(parentUI != null){
 		   awsS3LoginDialogItem.addActionListener(e->parentUI.showCloudAccountDialog());
 		}
+		s3FileSync.addActionListener(e->fileManager.syncFile());
 		cloudMenu.add(awsS3LoginDialogItem);
+		cloudMenu.add(s3FileSync);
 	
 		menuBar.add(fileMenu);
 		menuBar.add(cloudMenu);

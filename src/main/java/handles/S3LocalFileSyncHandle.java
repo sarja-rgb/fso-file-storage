@@ -48,6 +48,12 @@ public class S3LocalFileSyncHandle implements FileSyncHandle {
                 }
             }
         }
+
+        if(!unresolvedFiles.isEmpty()){
+          System.out.println("Save and update unresolve files, count : "+unresolvedFiles.size());
+          fileMetadataRepository.saveOrUpdateFiles(fileObjects);
+          unresolvedFiles.clear();
+        }
     }
 
   
@@ -72,6 +78,14 @@ public class S3LocalFileSyncHandle implements FileSyncHandle {
      * Conflict is detected by checksum or modified date mismatch.
      */
     private boolean isConflict(FileObject localFileObject, FileObject remoteFileObject) {
+        System.out.println("\n-----------------------");
+        System.out.println("localFileObject.checkSum "+localFileObject.getChecksum());
+        System.out.println("localFileObject.getLastModifiedDate "+localFileObject.getLastModifiedDate());
+
+        System.out.println("remoteFileObject.checkSum "+remoteFileObject.getChecksum());
+        System.out.println("remoteFileObject.getLastModifiedDate "+remoteFileObject.getLastModifiedDate());
+        System.out.println("-------------------------\n");
+
         // Conflict if checksums differ or last modified timestamps disagree
     return !Objects.equals(localFileObject.getChecksum(), remoteFileObject.getChecksum())
         || !Objects.equals(localFileObject.getLastModifiedDate(), remoteFileObject.getLastModifiedDate());
@@ -105,15 +119,15 @@ public class S3LocalFileSyncHandle implements FileSyncHandle {
         }
 
         // 2. Find files that are in local metadata but not in cloud
-        List<FileObject> allLocalFiles = fileMetadataRepository.findAll();
-        for (FileObject local : allLocalFiles) {
-            boolean existsInCloud = cloudFiles.stream()
-                    .anyMatch(cloud -> cloud.getFileName().equals(local.getFileName()));
+        // List<FileObject> allLocalFiles = fileMetadataRepository.findAll();
+        // for (FileObject local : allLocalFiles) {
+        //     boolean existsInCloud = cloudFiles.stream()
+        //             .anyMatch(cloud -> cloud.getFileName().equals(local.getFileName()));
 
-            if (!existsInCloud) {
-                unresolved.add(local);
-            }
-        }
+        //     if (!existsInCloud) {
+        //         unresolved.add(local);
+        //     }
+        // }
 
         return unresolved;
      }

@@ -31,6 +31,7 @@ import listeners.SqlFileEventListener;
 import storage.AwsLoginDialog;
 import storage.AwsS3Credential;
 import storage.FileObject;
+import storage.FileStoreException;
 import storage.S3CloudStoreOperations;
 import storage.db.FileMetadataRepository;
 import storage.db.SQLiteFileMetadataRepository;
@@ -67,6 +68,8 @@ public class CloudFileStorageUI extends JFrame implements BaseFileStorageUI {
     private Connection connection;
     private FileMetadataRepository fileMetadataRepository;
     private FileSyncHandle fileSyncHandle;
+
+    private boolean isWindowOpened = false;
     /**
      * Constructor initializes and builds the GUI layout and components.
      */
@@ -107,7 +110,11 @@ public class CloudFileStorageUI extends JFrame implements BaseFileStorageUI {
                    System.out.println("Window Opened");
 				  if(awsS3Credential == null){
                      showAlertMessage("AWS S3 Credentials not found. Please login the S3 credentials.");
-				  }  
+				  }
+                  else{
+                    showUnResolveFiles();
+                  }
+                  isWindowOpened = true;
                }
 
                @Override
@@ -155,6 +162,8 @@ public class CloudFileStorageUI extends JFrame implements BaseFileStorageUI {
         for (FileObject fileObject : files) {
             addFileToTableRecursive(fileObject);
         }
+
+        showUnResolveFiles();
     }
 
     /**
@@ -298,4 +307,30 @@ public class CloudFileStorageUI extends JFrame implements BaseFileStorageUI {
 		return (fileObject.getFileType() == null || fileObject.getFileType().isEmpty())? 
 		            FileUtil.DEFAULT_OBJECT_TYPE: fileObject.getFileType();
 	}
+
+    /**
+     * Show unresolve files alert message
+     */
+    private void showUnResolveFiles(){
+        if(!this.isWindowOpened){
+            return;
+        }
+
+        try {
+            List<FileObject> unResolveFiles = fileSyncHandle.unResolveFiles();
+            if(!unResolveFiles.isEmpty()){
+              String msg = String.format("There is are %d unresolve files. Please sync the files", unResolveFiles.size());
+              for(FileObject fileObject: unResolveFiles){
+                System.err.println("Unresolved file : "+fileObject);
+              }
+              this.showAlertMessage(msg);
+            }
+            else{
+               System.out.println("All files are in sync.....");
+            }
+        } catch (FileStoreException ex) {
+            System.out.println("Error file unresolve query error "+ex.getMessage());
+            ex.printStackTrace();
+        }
+    }
 }

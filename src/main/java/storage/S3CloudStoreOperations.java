@@ -88,10 +88,17 @@ public class S3CloudStoreOperations implements FileStoreOperations, S3ClientHand
             PutObjectRequest request = new PutObjectRequest(awsS3Credential.getBucketName(), file.getName(), file);
             PutObjectResult objectResult = s3Client.putObject(request);
             System.out.println("Save object result: " + objectResult);
-            Date modifiedDate = (objectResult != null && objectResult.getMetadata() != null)? 
+            Date modifiedDate = (objectResult != null && objectResult.getMetadata() != null && 
+                                 objectResult.getMetadata().getLastModified() != null)? 
                                  objectResult.getMetadata().getLastModified() : new Date();
-            String version = (objectResult != null)? objectResult.getVersionId(): "1";
+             
+            String version = (objectResult != null && objectResult.getVersionId() != null)? 
+                                objectResult.getVersionId(): "1";
             String checkSum = (objectResult != null)? objectResult.getETag(): "";
+            System.out.println("###    Date modifiedDate ="+modifiedDate);
+            System.out.println("###    Version ="+version);
+            System.out.println("###    checkSum ="+checkSum);
+
             return FileObject.builder()
                             .setFileName(file.getName())
                             .setLastModifiedDate(modifiedDate)
@@ -153,7 +160,9 @@ public class S3CloudStoreOperations implements FileStoreOperations, S3ClientHand
                     .setBucketName(object.getBucketName())
                     .setFileSize(object.getSize())
                     .setLastModifiedDate(object.getLastModified())
+                    .setCheckSum(object.getETag())
                     .build()).collect(Collectors.toList());
+
         } catch (NullPointerException | AmazonServiceException ex) {
             throw new FileStoreException("AWS Credentials error. Ensure credentials are configured correctly.", ex);
         }
