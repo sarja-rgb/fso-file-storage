@@ -105,6 +105,9 @@ public class S3LocalFileSyncHandle implements FileSyncHandle {
      * Conflict is detected by checksum or modified date mismatch.
      */
     private boolean isConflict(FileObject localFileObject, FileObject remoteFileObject) {
+        if(localFileObject == null || remoteFileObject == null){
+            return false;
+        }
         // Conflict if checksums differ or last modified timestamps disagree
         return !Objects.equals(localFileObject.getChecksum(), remoteFileObject.getChecksum())
         || !Objects.equals(localFileObject.getLastModifiedDate(), remoteFileObject.getLastModifiedDate());
@@ -133,7 +136,6 @@ public class S3LocalFileSyncHandle implements FileSyncHandle {
             FileObject local = fileMetadataRepository.findByName(remote.getFileName());
 
             if (local == null || isConflict(local, remote)) {
-                System.out.println("isConflict(local, remote) "+isConflict(local, remote));
                 unresolved.add(remote);
             }
         }
