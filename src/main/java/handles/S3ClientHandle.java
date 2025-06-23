@@ -1,7 +1,9 @@
-package storage;
+package handles;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
+
+import storage.AwsS3Credential;
 
 /**
  * S3ClientHandle defines the contract for managing AWS S3 client connections.
