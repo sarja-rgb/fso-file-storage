@@ -304,7 +304,6 @@ public class CloudFileStorageUI extends JFrame implements BaseFileStorageUI {
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(this, "Failed to login");
             logger.error("Failed to save AWS credentials, error: {}", ex.getMessage());
-
         }
     }
 
