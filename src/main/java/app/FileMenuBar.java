@@ -30,8 +30,8 @@ public class FileMenuBar {
 		JMenu fileMenu = new JMenu("File");
 
 		JMenuItem uploadToFolderItem = new JMenuItem("Upload");
-		//JMenuItem createFolderItem = new JMenuItem("Create Folder");
-		JMenuItem deleteFolderItem = new JMenuItem("Delete");
+		JMenuItem deleteFileItem = new JMenuItem("Delete");
+		JMenuItem downloadFileItem = new JMenuItem("Download");
 		JMenuItem refreshItem = new JMenuItem("Refresh");
 	
 		uploadToFolderItem.addActionListener(e -> fileManager.uploadFileToSelectedFolder());
@@ -49,7 +49,7 @@ public class FileMenuBar {
 		/**
 		 * Delete selected file path
 		 */
-		deleteFolderItem.addActionListener(e -> {
+		deleteFileItem.addActionListener(e -> {
 			FileObject fileObject = fileManager.getSelectedFile();
 			fileManager.deleteSelectedFile(fileObject);
 		});
@@ -59,7 +59,8 @@ public class FileMenuBar {
 		refreshItem.addActionListener(e -> fileManager.listFiles());
 
 		fileMenu.add(uploadToFolderItem);
-		fileMenu.add(deleteFolderItem);
+		fileMenu.add(deleteFileItem);
+		fileMenu.add(downloadFileItem);
 		fileMenu.addSeparator();
 		fileMenu.add(refreshItem);
 
