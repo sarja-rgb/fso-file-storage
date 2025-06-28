@@ -121,6 +121,5 @@ public class S3CloudManagerImpl implements FileManager {
         } catch (Exception ex) {
              logger.error("File sync errors {}", ex.getMessage());
         }
-        
     }
 }
