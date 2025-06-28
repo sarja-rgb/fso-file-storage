@@ -39,6 +39,7 @@ public class SqlFileEventListener implements FileEventListener {
     public void onUpdate(FileObject fileObject) throws FileEventExceptions {
         try {
             if (!fileMetadataRepository.exists(fileObject.getFileName())) {
+                logger.error("File not found, error: {}",fileObject.getFileName());
                 throw new FileEventExceptions("File not found for update: " + fileObject.getFileName());
             }
             fileMetadataRepository.saveOrUpdate(fileObject);
@@ -55,6 +56,7 @@ public class SqlFileEventListener implements FileEventListener {
     public void onDelete(FileObject fileObject) throws FileEventExceptions {
         try {
             if (!fileMetadataRepository.exists(fileObject.getFileName())) {
+                logger.error("File not found, error: {}",fileObject.getFileName());
                 throw new FileEventExceptions("File not found for deletion: " + fileObject.getFileName());
             }
             fileMetadataRepository.delete(fileObject.getFileName());
