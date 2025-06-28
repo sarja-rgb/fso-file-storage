@@ -10,6 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import storage.FileObject;
 import util.SqlUtil;
 
@@ -19,6 +22,7 @@ import util.SqlUtil;
  * using a SQLite database.
  */
 public class SQLiteFileMetadataRepository implements FileMetadataRepository {
+    private static final Logger logger = LogManager.getLogger(SQLiteFileMetadataRepository.class);
     private final Connection connection;
     private Function<ResultSet,FileObject> rowMapper;
 
@@ -44,8 +48,9 @@ public class SQLiteFileMetadataRepository implements FileMetadataRepository {
     private void createTableIfNotExists() {
         try (Statement stmt = connection.createStatement()) {
             stmt.execute(SqlUtil.FILE_METADATA_SQL_SCHEMA);
-        } catch (SQLException e) {
-            throw new RuntimeException("Failed to create table", e);
+        } catch (SQLException ex) {
+            logger.error("Failed to create database schema table , error: {}",ex.getMessage());
+            throw new RuntimeException("Failed to create table", ex);
         }
     }
 
@@ -60,9 +65,10 @@ public class SQLiteFileMetadataRepository implements FileMetadataRepository {
         try (PreparedStatement stmt = connection.prepareStatement(SqlUtil.FILE_METADATA_SAVE_UPDATE_SQL)) {
             prepareSaveOrUpdateStatement(file, stmt);
             stmt.executeUpdate();
-            System.out.println("######File object saved in DB "+file);
-        } catch (SQLException e) {
-            throw new RuntimeException("Failed to save or update file", e);
+            logger.info("File object record saved in DB {}",file);
+        } catch (SQLException ex) {
+            logger.error("Failed to save or update database record , error: {}",ex.getMessage());
+            throw new RuntimeException("Failed to save or update file", ex);
         }
     }
 
@@ -74,8 +80,9 @@ public class SQLiteFileMetadataRepository implements FileMetadataRepository {
                 stmt.addBatch();
             }
             stmt.executeBatch();
-        } catch (SQLException e) {
-            throw new RuntimeException("Failed to save or update files batch", e);
+        } catch (SQLException ex) {
+            logger.error("Failed to save or update files batch, error: {}",ex.getMessage());
+            throw new RuntimeException("Failed to save or update files batch", ex);
         }
     }  
 
@@ -88,7 +95,6 @@ public class SQLiteFileMetadataRepository implements FileMetadataRepository {
     @Override
     public FileObject findByName(String name) {
         String sql = "SELECT * FROM file_metadata WHERE file_name = ?";
-
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, name);
             ResultSet rs = stmt.executeQuery();
@@ -96,8 +102,9 @@ public class SQLiteFileMetadataRepository implements FileMetadataRepository {
                return this.rowMapper.apply(rs);
             }
             return null;
-        } catch (SQLException e) {
-            throw new RuntimeException("Failed to find file by name", e);
+        } catch (SQLException ex) {
+            logger.error("Failed to find file by namem, error: {}",ex.getMessage());
+            throw new RuntimeException("Failed to find file by name", ex);
         }
     }
 
@@ -113,8 +120,9 @@ public class SQLiteFileMetadataRepository implements FileMetadataRepository {
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, name);
             stmt.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException("Failed to delete file", e);
+        } catch (SQLException ex) {
+            logger.error("Failed to delete file. error: {}",ex.getMessage());
+            throw new RuntimeException("Failed to delete file", ex);
         }
     }
 
@@ -137,8 +145,9 @@ public class SQLiteFileMetadataRepository implements FileMetadataRepository {
                 }
             }
             return files;
-        } catch (SQLException e) {
-            throw new RuntimeException("Failed to retrieve all files", e);
+        } catch (SQLException ex) {
+            logger.error("Failed to find all file. error: {}",ex.getMessage());
+            throw new RuntimeException("Failed to retrieve all files", ex);
         }
     }
 
@@ -156,8 +165,9 @@ public class SQLiteFileMetadataRepository implements FileMetadataRepository {
             stmt.setString(1, name);
             ResultSet rs = stmt.executeQuery();
             return rs.next(); // Returns true if a record is found
-        } catch (SQLException e) {
-            throw new RuntimeException("Failed to check existence", e);
+        } catch (SQLException ex) {
+            logger.error("Failed to check existence. error: {}",ex.getMessage());
+            throw new RuntimeException("Failed to check existence", ex);
         }
     }
 
