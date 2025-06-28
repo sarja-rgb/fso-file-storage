@@ -6,6 +6,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -29,6 +32,8 @@ import util.AwsS3Util;
  * It supports saving encrypted credentials to local storage and reading them back securely.
  */
 public class S3CloudStoreOperations implements FileStoreOperations, S3ClientHandle {
+    private static final Logger logger = LogManager.getLogger(S3CloudStoreOperations.class);
+
     private AmazonS3 s3Client;
     private AwsS3Credential awsS3Credential;
 
@@ -72,7 +77,7 @@ public class S3CloudStoreOperations implements FileStoreOperations, S3ClientHand
               connectAwsS3Client();
             }
         } catch (AmazonS3Exception ex) {
-            System.out.println("Error loading credentials: " + ex.getMessage());
+           logger.error("Error loading credentials:  {}" , ex.getMessage());
         }
     }
 
@@ -87,7 +92,6 @@ public class S3CloudStoreOperations implements FileStoreOperations, S3ClientHand
         try {
             PutObjectRequest request = new PutObjectRequest(awsS3Credential.getBucketName(), file.getName(), file);
             PutObjectResult objectResult = s3Client.putObject(request);
-            System.out.println("Save object result: " + objectResult);
             Date modifiedDate = (objectResult != null && objectResult.getMetadata() != null && 
                                  objectResult.getMetadata().getLastModified() != null)? 
                                  objectResult.getMetadata().getLastModified() : new Date();
@@ -95,10 +99,6 @@ public class S3CloudStoreOperations implements FileStoreOperations, S3ClientHand
             String version = (objectResult != null && objectResult.getVersionId() != null)? 
                                 objectResult.getVersionId(): "1";
             String checkSum = (objectResult != null)? objectResult.getETag(): "";
-            System.out.println("###    Date modifiedDate ="+modifiedDate);
-            System.out.println("###    Version ="+version);
-            System.out.println("###    checkSum ="+checkSum);
-
             return FileObject.builder()
                             .setFileName(file.getName())
                             .setLastModifiedDate(modifiedDate)
@@ -109,6 +109,7 @@ public class S3CloudStoreOperations implements FileStoreOperations, S3ClientHand
                             .setCheckSum(checkSum)
                             .build();
         } catch (NullPointerException | AmazonServiceException ex) {
+            logger.error("Failed to save data to S3 cloud storage {}" , ex.getMessage());
             throw new FileStoreException("Failed to save AWS S3 object. Check your credentials", ex);
         }
     }
@@ -125,6 +126,7 @@ public class S3CloudStoreOperations implements FileStoreOperations, S3ClientHand
         try {
             s3Client.deleteObject(awsS3Credential.getBucketName(), fileObject.getFileName());
         } catch (AmazonServiceException ex) {
+            logger.error("Failed to delete file on AWS S3 cloud storage {}" , ex.getMessage());
             throw new FileStoreException("Failed to remove AWS S3 object. Check your credentials", ex);
         }
     }
@@ -164,6 +166,7 @@ public class S3CloudStoreOperations implements FileStoreOperations, S3ClientHand
                     .build()).collect(Collectors.toList());
 
         } catch (NullPointerException | AmazonServiceException ex) {
+            logger.error("Failed load files AWS S3 cloud storage {}" , ex.getMessage());
             throw new FileStoreException("AWS Credentials error. Ensure credentials are configured correctly.", ex);
         }
     }
@@ -179,7 +182,7 @@ public class S3CloudStoreOperations implements FileStoreOperations, S3ClientHand
         try {
             awsS3Credential = AwsS3Util.loadCredential();
         } catch (IOException ex) {
-            System.out.println("Error loading AWS credentials: " + ex.getMessage());
+             logger.error("Error loading AWS credentials: {}" , ex.getMessage());
         }
         s3Client = connectAwsS3Client(awsS3Credential);
         return s3Client;
@@ -225,7 +228,6 @@ public class S3CloudStoreOperations implements FileStoreOperations, S3ClientHand
      */
     private AmazonS3 createAmazonS3Client(AwsS3Credential s3Credential) throws AmazonS3Exception {
         try {
-            System.out.print("createAmazonS3Client -> s3Credential: " + s3Credential);
             BasicAWSCredentials awsCreds = new BasicAWSCredentials(
                     s3Credential.getAccessKey(),
                     s3Credential.getSecretKey()
@@ -235,6 +237,7 @@ public class S3CloudStoreOperations implements FileStoreOperations, S3ClientHand
                     .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
                     .build();
         } catch (Exception ex) {
+            logger.error("Failed to create AWS credentials. Error {}" , ex.getMessage());
             throw new AmazonS3Exception("Failed to create AWS S3 client", ex);
         }
     }
