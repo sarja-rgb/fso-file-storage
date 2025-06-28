@@ -22,6 +22,9 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import handles.FileSyncHandle;
 import handles.S3LocalFileSyncHandle;
 import listeners.FileEventListener;
@@ -45,6 +48,7 @@ import util.FileUtil;
  * showing a tree view and a file table.
  */
 public class CloudFileStorageUI extends JFrame implements BaseFileStorageUI {
+    private static final Logger logger = LogManager.getLogger(S3CloudStoreOperations.class);
 
     // Handles file logic and operations (upload, sync, delete)
     private FileManager fileManager;
@@ -89,8 +93,8 @@ public class CloudFileStorageUI extends JFrame implements BaseFileStorageUI {
         fileTable = new JTable(tableModel);
 		try {
 			awsS3Credential = AwsS3Util.loadCredential();
-		} catch (IOException e) {
-		    System.out.println("Error loading AWS credentials");
+		} catch (IOException ex) {
+            logger.error("Error loading AWS credentials. {}", ex.getMessage());
 		}
         initFileMetaRepository();
         cloudStoreOperations = new S3CloudStoreOperations(awsS3Credential);
@@ -106,7 +110,7 @@ public class CloudFileStorageUI extends JFrame implements BaseFileStorageUI {
 		addWindowListener(new WindowAdapter() {
                @Override
                public void windowOpened(WindowEvent e) {
-                   System.out.println("Window Opened");
+                  logger.info("GUI application window  opended");
 				  if(awsS3Credential == null){
                      showAlertMessage("AWS S3 Credentials not found. Please login the S3 credentials.");
 				  }
@@ -118,9 +122,10 @@ public class CloudFileStorageUI extends JFrame implements BaseFileStorageUI {
 
                @Override
                public void windowActivated(WindowEvent e) {
-                   System.out.println("Window Activated");
+                   logger.info("GUI application window Activated.....");
                }
         });
+        logger.info("GUI application initialized.....");
     }
 
     /**
@@ -128,10 +133,11 @@ public class CloudFileStorageUI extends JFrame implements BaseFileStorageUI {
      */
     private void initFileMetaRepository()  {
         try {
+            logger.info("Connecting SQL database conenction.....");
             connection = SqlConnectionManager.getConnection();
             fileMetadataRepository = new SQLiteFileMetadataRepository(connection);
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } catch (SQLException ex) {
+            logger.error("Database connection failed. {}", ex.getMessage());
         }
     }
 
@@ -293,10 +299,12 @@ public class CloudFileStorageUI extends JFrame implements BaseFileStorageUI {
             cloudStoreOperations.connectAwsS3Client(awsS3Credential);
 
             JOptionPane.showMessageDialog(this, "AWS credentials saved and encrypted.");
+            logger.info("AWS credentials saved and encrypted");
             fileManager.listFiles();
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(this, "Failed to login");
-            System.out.println("Save login error " + ex.getMessage());
+            logger.error("Failed to save AWS credentials, error: {}", ex.getMessage());
+
         }
     }
 
@@ -322,17 +330,17 @@ public class CloudFileStorageUI extends JFrame implements BaseFileStorageUI {
             List<FileObject> unResolveFiles = fileSyncHandle.unResolveFiles();
             if(!unResolveFiles.isEmpty()){
               String msg = String.format("There is are %d unresolve files. Please sync the files", unResolveFiles.size());
+              logger.info(msg);
               for(FileObject fileObject: unResolveFiles){
-                System.err.println("Unresolved file : "+fileObject);
+                logger.info("Unresolved file: {}",fileObject);
               }
               this.showAlertMessage(msg);
             }
             else{
-               System.out.println("All files are in sync.....");
+             logger.info("All files are in sync.....");
             }
         } catch (FileStoreException ex) {
-            System.out.println("Error file unresolve query error "+ex.getMessage());
-            ex.printStackTrace();
+            logger.error("Unresolved files query error: {}", ex.getMessage());
         }
     }
 }
