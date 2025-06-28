@@ -8,3 +8,5 @@ s3_credentials
 s3_encryption.key
 secrets_test.properties
 cloud_store.db
+logs
+logs/**
