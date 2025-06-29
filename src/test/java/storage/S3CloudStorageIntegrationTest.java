@@ -7,6 +7,8 @@ import java.util.List;
 
 import org.junit.jupiter.api.AfterAll;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
@@ -60,12 +62,38 @@ public class S3CloudStorageIntegrationTest {
 
     @Test
     @Order(3)
+    public void testDownloadFileSuccess() throws Exception {
+        FileObject fileObject = FileObject.builder()
+                                .setFileName(TEST_FILE_NAME)
+                                .build();
+        File downloadedFile = s3CloudStoreOperations.downloadFile(fileObject);
+        assertNotNull(downloadedFile);
+        assertTrue(downloadedFile.exists());
+    }
+
+
+    @Test
+    @Order(4)
+    public void testDownloadNonExistingFileFails() {
+        FileObject fileObject = FileObject.builder()
+                .setFileName("non-existent-file.txt")
+                .build();
+
+        assertThrows(FileStoreException.class, () -> {
+            s3CloudStoreOperations.downloadFile(fileObject);
+        });
+    }
+
+    @Test
+    @Order(5)
     public void testDeleteFile() throws FileStoreException {
         FileObject fileObject = FileObject.builder().setFileName(TEST_FILE_NAME).build();
         s3CloudStoreOperations.delete(fileObject);
         AmazonS3 s3Client = s3CloudStoreOperations.getAwsS3Client();
         assertFalse(s3Client.doesObjectExist(awsS3Credential.getBucketName(), fileObject.getFileName()));
     }
+
+  
 
     @AfterAll
     public static void cleanup() {
