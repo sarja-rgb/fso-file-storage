@@ -16,6 +16,8 @@ import org.junit.jupiter.api.Test;
 
 import com.amazonaws.services.s3.AmazonS3;
 
+import util.FileUtil;
+
 /**
  * Integration test for S3CloudStorage using real AWS credentials and bucket.
  * This will perform live S3 operations: upload, list, and delete.
@@ -42,6 +44,7 @@ public class S3CloudStorageIntegrationTest {
         try (FileWriter writer = new FileWriter(tempFile)) {
             writer.write("Integration test content.");
         }
+        FileUtil.createFileDirectory(FileUtil.LOCAL_STORAGE_DIR);
     }
 
     @Test
