@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
@@ -257,6 +258,9 @@ public class S3CloudStoreOperations implements FileStoreOperations, S3ClientHand
       try {          
             String filename = fileObject.getFileName();
             S3Object s3object = s3Client.getObject(new GetObjectRequest(awsS3Credential.getBucketName(),filename));
+            if(!Files.exists(Paths.get(FileUtil.LOCAL_STORAGE_DIR))) {
+            	FileUtil.createFileDirectory(FileUtil.LOCAL_STORAGE_DIR);
+            }
             Path downloadPath = Paths.get(FileUtil.LOCAL_STORAGE_DIR, filename);
             File downloadFile = downloadPath.toFile();    
             try (OutputStream outputStream = new FileOutputStream(downloadFile)) {
