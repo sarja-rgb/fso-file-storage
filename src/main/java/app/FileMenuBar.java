@@ -53,6 +53,14 @@ public class FileMenuBar {
 			FileObject fileObject = fileManager.getSelectedFile();
 			fileManager.deleteSelectedFile(fileObject);
 		});
+
+		/**
+		 * Download selected file from the cloud S3 to local directory
+		 */
+		downloadFileItem.addActionListener(e -> {
+			FileObject fileObject = fileManager.getSelectedFile();
+			fileManager.downloadSelectedFile(fileObject);
+		});
         /**
 		* Refresh file list
 	    */

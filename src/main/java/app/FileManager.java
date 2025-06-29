@@ -50,4 +50,10 @@ public interface FileManager {
 	 *  Sync up files
 	 */
 	public void syncFile();
+
+	/**
+	 * Delete selected file 
+	 * @param fileObject
+	 */
+	public void downloadSelectedFile(FileObject fileObject);
 }

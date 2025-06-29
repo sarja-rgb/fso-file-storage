@@ -122,4 +122,31 @@ public class S3CloudManagerImpl implements FileManager {
              logger.error("File sync errors {}", ex.getMessage());
         }
     }
+
+    /**
+     * Download selected file from cloud storage
+     * 
+     * @param  fileObject
+     */
+    @Override
+    public void downloadSelectedFile(FileObject fileObject) {
+       try {
+            if(fileObject == null){
+              appUI.showAlertMessage("File is not selected");
+              return;
+            }
+            logger.info("Start file download from cloud storage {} ",fileObject);
+            File downloadedFile = fileOperations.downloadFile(fileObject);
+            if(downloadedFile != null){
+              logger.info("File download from cloud storage completed {} ",fileObject);
+              appUI.showAlertMessage("File download completed");
+            }
+            else{
+               logger.info("File download from cloud storage failed {} ",fileObject);
+              appUI.showAlertMessage("File download Failed");
+            }
+        } catch (Exception ex) {
+             logger.error("Failed to download file, error {}", ex.getMessage());
+        }
+    }
 }
