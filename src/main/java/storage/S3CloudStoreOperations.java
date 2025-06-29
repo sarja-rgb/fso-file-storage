@@ -1,7 +1,12 @@
 package storage;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -15,13 +20,16 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
+import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ListObjectsV2Result;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectResult;
+import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 
 import handles.S3ClientHandle;
 import util.AwsS3Util;
+import util.FileUtil;
 
 /**
  * S3CloudStoreOperations handles file operations on AWS S3 using the Amazon S3 SDK.
@@ -33,7 +41,6 @@ import util.AwsS3Util;
  */
 public class S3CloudStoreOperations implements FileStoreOperations, S3ClientHandle {
     private static final Logger logger = LogManager.getLogger(S3CloudStoreOperations.class);
-
     private AmazonS3 s3Client;
     private AwsS3Credential awsS3Credential;
 
@@ -239,6 +246,33 @@ public class S3CloudStoreOperations implements FileStoreOperations, S3ClientHand
         } catch (Exception ex) {
             logger.error("Failed to create AWS credentials. Error {}" , ex.getMessage());
             throw new AmazonS3Exception("Failed to create AWS S3 client", ex);
+        }
+    }
+
+    @Override
+    public File downloadFile(FileObject fileObject) throws FileStoreException {
+      try {          
+            String filename = fileObject.getFileName();
+            // Download S3 object
+            S3Object s3object = s3Client.getObject(new GetObjectRequest(awsS3Credential.getBucketName(),filename));
+            Path downloadPath = Paths.get(FileUtil.LOCAL_STORAGE_DIR, filename);
+            File downloadFile = downloadPath.toFile();    
+            try (OutputStream outputStream = new FileOutputStream(downloadFile)) {
+                downloadFile.getParentFile().mkdirs();
+                // Create local file
+                try (InputStream inputStream = s3object.getObjectContent()) {
+                    byte[] buffer = new byte[1024];
+                    int bytesRead;
+                    while ((bytesRead = inputStream.read(buffer)) > 0) {
+                        outputStream.write(buffer, 0, bytesRead);
+                    }
+                }
+            }
+           // System.out.println("Download successful: " + downloadFile.getAbsolutePath());
+            return downloadFile;
+        } catch (Exception ex) {
+            logger.error("Failed to create AWS credentials. Error {}" , ex.getMessage());
+            throw new FileStoreException();
         }
     }
 }

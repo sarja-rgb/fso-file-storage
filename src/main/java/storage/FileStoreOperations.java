@@ -43,4 +43,12 @@ public interface FileStoreOperations {
      * @throws FileStoreException if the load operation fails
      */
     public List<FileObject> loadAll() throws FileStoreException;
+
+    /**
+     * Down a fileobject from the cloud storage to local directory 
+     * @param fileObject
+     * @return File
+     * @throws FileStoreException 
+     */
+    public File downloadFile(FileObject fileObject) throws FileStoreException ;
 }
