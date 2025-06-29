@@ -5,6 +5,9 @@ import java.sql.SQLException;
 
 import javax.swing.SwingUtilities;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import util.AwsS3Util;
 /**
  * Cloud StorageApp is the main GUI application class. It provides a Swing-based
@@ -13,6 +16,8 @@ import util.AwsS3Util;
  * file list to reflect the current state of the local storage directory.
  */
 public class CloudStorageApp  {
+	private static final Logger logger = LogManager.getLogger(CloudStorageApp.class);
+
 	/**
 	 * Main method to launch the application.
 	 *
@@ -23,7 +28,7 @@ public class CloudStorageApp  {
 		try {
 			AwsS3Util.initializeEncryptionKey(); // Ensure AES key exists
 		} catch (IOException e) {
-			System.err.println("Failed to initialize encryption key: " + e.getMessage());
+			logger.error("Failed to initialize encrypted AWS credentials {}" , e.getMessage());
 			System.exit(1);
 		}
 		SwingUtilities.invokeLater(() -> new CloudFileStorageUI().setVisible(true));

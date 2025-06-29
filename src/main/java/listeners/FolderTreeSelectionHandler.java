@@ -2,8 +2,8 @@ package listeners;
 
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
+
 import app.BaseFileStorageUI;
 import util.FileUtil;
 

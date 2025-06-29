@@ -1,11 +1,15 @@
 
 package storage;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,8 +21,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ListObjectsV2Result;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 
 public class S3CloudStoreOperationsTest {
@@ -93,5 +99,45 @@ public class S3CloudStoreOperationsTest {
         verify(mockS3Client).listObjectsV2(mockCredential.getBucketName());
 
         assertTrue(!fileObjects.isEmpty());
+    }
+
+     @Test
+    public void testDownloadFileSuccess() throws Exception {
+        String dummyContent = "File content from mock S3!";
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(dummyContent.getBytes());
+
+        S3Object mockS3Object = new S3Object();
+        mockS3Object.setObjectContent(inputStream);
+
+        when(mockS3Client.getObject(any(GetObjectRequest.class))).thenReturn(mockS3Object);
+        FileObject testFileObject = FileObject.builder()
+                .setFileName("mock-test.txt")
+                .build();
+
+        File downloadedFile = s3CloudStoreOperations.downloadFile(testFileObject);
+        // Assert
+        assertNotNull(downloadedFile);
+        assertTrue(downloadedFile.exists());
+        String content = Files.readString(downloadedFile.toPath());
+        assertEquals(dummyContent, content);
+
+        ArgumentCaptor<GetObjectRequest> requestCaptor = ArgumentCaptor.forClass(GetObjectRequest.class);
+        verify(mockS3Client).getObject(requestCaptor.capture());
+        assertEquals("mock-test.txt", requestCaptor.getValue().getKey());
+        assertEquals(mockCredential.getBucketName(), requestCaptor.getValue().getBucketName());
+    }
+
+    @Test
+    public void testDownloadThrowsFileStoreException() {
+        FileObject testFileObject = FileObject.builder()
+                .setFileName("mock-test.txt")
+                .build();
+        when(mockS3Client.getObject(any(GetObjectRequest.class)))
+                .thenThrow(new RuntimeException("S3 error"));
+
+        assertThrows(FileStoreException.class, () -> {
+            s3CloudStoreOperations.downloadFile(testFileObject);
+        });
+
     }
 }

@@ -10,7 +10,7 @@
     <version>1.0-SNAPSHOT</version>
 
     <name>LocalFileStorageApp</name>
-    <description>A simple local file manager desktop application using Java Swing</description>
+    <description>A simple cloud file manager desktop application using Java Swing</description>
 
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
@@ -39,6 +39,21 @@
             <artifactId>sqlite-jdbc</artifactId>
             <version>3.50.1.0</version>
         </dependency>
+
+        <!-- Log4j Core -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.24.3</version>
+        </dependency>
+
+        <!-- Log4j API -->
+       <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>2.24.3</version>
+        </dependency>
+
         
         <!-- JUnit 5 for unit testing -->
         <dependency>

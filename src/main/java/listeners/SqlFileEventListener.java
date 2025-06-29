@@ -1,5 +1,8 @@
 package listeners;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import storage.FileObject;
 import storage.db.FileMetadataRepository;
 import util.FileEventExceptions;
@@ -9,7 +12,7 @@ import util.FileEventExceptions;
  * using a SQL-based file metadata repository.
  */
 public class SqlFileEventListener implements FileEventListener {
-
+    private static final Logger logger = LogManager.getLogger(SqlFileEventListener.class);
     private final FileMetadataRepository fileMetadataRepository;
 
     public SqlFileEventListener(FileMetadataRepository fileMetadataRepository) {
@@ -23,8 +26,9 @@ public class SqlFileEventListener implements FileEventListener {
     public void onSave(FileObject fileObject) throws FileEventExceptions {
         try {
             fileMetadataRepository.saveOrUpdate(fileObject);
-        } catch (Exception e) {
-            throw new FileEventExceptions("Failed to save file metadata", e);
+        } catch (Exception ex) {
+            logger.error("Failed to save file metadata, error: {}",ex.getMessage());
+            throw new FileEventExceptions("Failed to save file metadata", ex);
         }
     }
 
@@ -35,11 +39,13 @@ public class SqlFileEventListener implements FileEventListener {
     public void onUpdate(FileObject fileObject) throws FileEventExceptions {
         try {
             if (!fileMetadataRepository.exists(fileObject.getFileName())) {
+                logger.error("File not found, error: {}",fileObject.getFileName());
                 throw new FileEventExceptions("File not found for update: " + fileObject.getFileName());
             }
             fileMetadataRepository.saveOrUpdate(fileObject);
-        } catch (Exception e) {
-            throw new FileEventExceptions("Failed to update file metadata", e);
+        } catch (Exception ex) {
+            logger.error("Failed to update file metadata , error: {}",ex.getMessage());
+            throw new FileEventExceptions("Failed to update file metadata", ex);
         }
     }
 
@@ -50,11 +56,13 @@ public class SqlFileEventListener implements FileEventListener {
     public void onDelete(FileObject fileObject) throws FileEventExceptions {
         try {
             if (!fileMetadataRepository.exists(fileObject.getFileName())) {
+                logger.error("File not found, error: {}",fileObject.getFileName());
                 throw new FileEventExceptions("File not found for deletion: " + fileObject.getFileName());
             }
             fileMetadataRepository.delete(fileObject.getFileName());
-        } catch (Exception e) {
-            throw new FileEventExceptions("Failed to delete file metadata", e);
+        } catch (Exception ex) {
+            logger.error("Failed to delete file metadata, error: {}",ex.getMessage());
+            throw new FileEventExceptions("Failed to delete file metadata", ex);
         }
     }
 }

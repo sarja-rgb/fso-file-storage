@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import storage.FileObject;
 import storage.FileStoreException;
 import storage.FileStoreOperations;
@@ -19,6 +22,7 @@ import storage.db.FileMetadataRepository;
  * and conflicted files.
  */
 public class S3LocalFileSyncHandle implements FileSyncHandle {
+    private static final Logger logger = LogManager.getLogger(S3LocalFileSyncHandle.class);
 
     // Local metadata repository (e.g., SQLite-backed)
     private final FileMetadataRepository fileMetadataRepository;
@@ -73,12 +77,12 @@ public class S3LocalFileSyncHandle implements FileSyncHandle {
         }
        
         if(!unresolvedFiles.isEmpty()){
-          System.out.println("Save and update unresolve files, count : "+unresolvedFiles.size());
+          logger.info("Save and update unresolve files, count : {}",unresolvedFiles.size());
           fileMetadataRepository.saveOrUpdateFiles(fileObjects);
           unresolvedFiles.clear();
         }
         else{
-            System.out.println("File unresolves are empty");
+           logger.info("File unresolves are empty");
         }
     }
 

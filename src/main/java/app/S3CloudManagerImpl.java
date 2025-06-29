@@ -5,6 +5,9 @@ import java.util.List;
 
 import javax.swing.JFileChooser;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import handles.FileSyncHandle;
 import listeners.FileEventListener;
 import storage.FileObject;
@@ -17,6 +20,7 @@ import util.FileUtil;
  * S3FileManagerImpl implements FileManager interface and uploads, deletes, and lists files/folders to/from AWS S3.
  */
 public class S3CloudManagerImpl implements FileManager {
+    private static final Logger logger = LogManager.getLogger(S3CloudManagerImpl.class);
     private final BaseFileStorageUI appUI;
     private final FileStoreOperations fileOperations;
     private FileEventListener fileEventListener;
@@ -56,13 +60,14 @@ public class S3CloudManagerImpl implements FileManager {
                 appUI.showAlertMessage("File upload completed");
                 listFiles();
                 if(fileEventListener != null){
-                   System.out.println("#### File event listener write file"+fileObject);
+                   logger.info("#### File event listener write file: {}",fileObject);
                    fileEventListener.onSave(fileObject);
                 }
-			} catch (FileStoreException e) {
-				appUI.showAlertMessage("Upload Error: \n" + e.getMessage());
-            } catch (FileEventExceptions e) {
-                e.printStackTrace();
+			} catch (FileStoreException ex1) {
+				appUI.showAlertMessage("Upload Error: \n" + ex1.getMessage());
+                logger.error("File Upload Error: error: {}", ex1.getMessage());
+            } catch (FileEventExceptions ex2) {
+                logger.error("File Upload event error: {}", ex2.getMessage());
             }
 
 		}
@@ -80,22 +85,22 @@ public class S3CloudManagerImpl implements FileManager {
                 fileEventListener.onDelete(fileObject);
              }
             listFiles();
-        } catch (FileStoreException e) {
+        } catch (FileStoreException ex1) {
            appUI.showAlertMessage("Error deleting file");
-           System.err.println("Error deleteing file");
-        } catch (FileEventExceptions e) {
-            e.printStackTrace();
+           logger.error("Error deleteing file {}", ex1.getMessage());
+        } catch (FileEventExceptions ex2) {
+            logger.error("File delete event error: {}", ex2.getMessage());
         }
     }
 
     @Override
     public void listFiles() {
         try {
-            System.out.println("Listing files in S3:");
+            logger.info("Listing files in S3");
             List<FileObject> fileObjects = fileOperations.loadAll();
             appUI.updateFileTable(fileObjects);
         } catch (FileStoreException ex) {
-            System.out.println("List file errors "+ex.getMessage());
+           logger.error("List file errors: {}", ex.getMessage());
         }
     }
 
@@ -108,15 +113,40 @@ public class S3CloudManagerImpl implements FileManager {
     public void syncFile() {
         try {
            if(fileSyncHandle != null){
-              System.out.println("Sync up local meta data and cloud storage");
+             logger.info("Sync up local meta data and cloud storage");
               List<FileObject> fileObjects = fileOperations.loadAll();
               fileSyncHandle.syncFiles(fileObjects);
               appUI.showAlertMessage("File storage sync up completed");
             } 
         } catch (Exception ex) {
-            System.out.println("File sync errors "+ex.getMessage());
-            ex.printStackTrace();
+             logger.error("File sync errors {}", ex.getMessage());
         }
-        
+    }
+
+    /**
+     * Download selected file from cloud storage
+     * 
+     * @param  fileObject
+     */
+    @Override
+    public void downloadSelectedFile(FileObject fileObject) {
+       try {
+            if(fileObject == null){
+              appUI.showAlertMessage("File is not selected");
+              return;
+            }
+            logger.info("Start file download from cloud storage {} ",fileObject);
+            File downloadedFile = fileOperations.downloadFile(fileObject);
+            if(downloadedFile != null){
+              logger.info("File download from cloud storage completed {} ",fileObject);
+              appUI.showAlertMessage("File download completed");
+            }
+            else{
+               logger.info("File download from cloud storage failed {} ",fileObject);
+              appUI.showAlertMessage("File download Failed");
+            }
+        } catch (Exception ex) {
+             logger.error("Failed to download file, error {}", ex.getMessage());
+        }
     }
 }
