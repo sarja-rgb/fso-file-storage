@@ -249,15 +249,18 @@ public class S3CloudStoreOperations implements FileStoreOperations, S3ClientHand
         }
     }
 
+    /**
+     * Download S3 object to local directory
+     */
     @Override
     public File downloadFile(FileObject fileObject) throws FileStoreException {
       try {          
             String filename = fileObject.getFileName();
-            // Download S3 object
             S3Object s3object = s3Client.getObject(new GetObjectRequest(awsS3Credential.getBucketName(),filename));
             Path downloadPath = Paths.get(FileUtil.LOCAL_STORAGE_DIR, filename);
             File downloadFile = downloadPath.toFile();    
             try (OutputStream outputStream = new FileOutputStream(downloadFile)) {
+                //ensure the parent directory folder is created
                 downloadFile.getParentFile().mkdirs();
                 // Create local file
                 try (InputStream inputStream = s3object.getObjectContent()) {
@@ -268,7 +271,7 @@ public class S3CloudStoreOperations implements FileStoreOperations, S3ClientHand
                     }
                 }
             }
-           // System.out.println("Download successful: " + downloadFile.getAbsolutePath());
+            logger.info("Download successful:{} " + downloadFile.getAbsolutePath());
             return downloadFile;
         } catch (Exception ex) {
             logger.error("Failed to create AWS credentials. Error {}" , ex.getMessage());
